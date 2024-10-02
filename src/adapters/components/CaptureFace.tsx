@@ -6,6 +6,7 @@ import {
 } from "../../usecases/students/faceRecognition";
 import { Student } from "../../domain/models/Student";
 import { handleCapture } from "../../usecases/students/handleCapture";
+import { getStudentDetails } from "../../infrastructure/api/studentApi";
 
 interface CaptureFaceProps {
   onCapture: (faceId: string) => void;
@@ -39,11 +40,16 @@ const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
 
       if (generatedFaceId) {
         setFaceId(generatedFaceId);
-        const estudiante: Student = {
-          name: "Emanuel Jara",
-          faceId: generatedFaceId,
-        };
+        // Ahora obtén los detalles del estudiante basados en el faceId
+        const estudianteDetails = await getStudentDetails(generatedFaceId);
+        console.log("Detalles del estudiante: ", estudianteDetails);
         console.log("FaceId generado: ", generatedFaceId);
+        // Asegúrate de que estudianteDetails tenga los datos que necesitas
+        const estudiante: Student = {
+          name: estudianteDetails.name, // Usa el nombre obtenido
+          faceId: generatedFaceId, // El faceId recién generado
+          formUrl: estudianteDetails.formUrl, // Usa el formUrl obtenido
+        };
 
         const url = await handleCapture(estudiante);
         setFormUrl(url);

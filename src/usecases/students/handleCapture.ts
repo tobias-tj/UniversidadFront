@@ -6,7 +6,7 @@ export const handleCapture = async (estudiante: Student): Promise<string> => {
   await saveFaceId(estudiante);
 
   // obtenemos la URL del formulario
-  const formUrl = await getFormUrl();
+  const formUrl = await getFormUrl(estudiante.name);
 
   return formUrl;
 };
