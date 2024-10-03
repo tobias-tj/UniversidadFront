@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { initializefaceapi } from "../../usecases/students/faceRecognition";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 
 const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -16,11 +17,13 @@ const PreparationScreen: React.FC = () => {
     const loadModels = async () => {
       await initializefaceapi();
       setModelsLoaded(true);
-
+      console.log(studentName);
+      console.log(formUrl);
       // Realiza el POST al backend una vez que los modelos se han cargado
       try {
-        await axios.post("http://localhost:8080/api/form-url", {
+        await axios.post("http://localhost:3000/api/saveFormUrl", {
           name: studentName,
+          //cedula
           formUrl,
         });
         console.log("Datos enviados al backend correctamente");
@@ -33,7 +36,7 @@ const PreparationScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (modelsLoaded) {
-      navigate("/capture-face"); // Navega a la pantalla de captura facial
+      navigate("/capture-face", { state: { studentName: studentName } }); // Navega a la pantalla de captura facial
     }
   };
 
@@ -47,17 +50,10 @@ const PreparationScreen: React.FC = () => {
         favor, asegúrate de estar en un lugar tranquilo y sin distracciones para
         poder capturar tu rostro correctamente.
       </p>
-      <button
-        onClick={handleContinue}
-        disabled={!modelsLoaded}
-        className={`px-6 py-3 text-white rounded-lg transition ${
-          modelsLoaded
-            ? "bg-green-500 hover:bg-green-600"
-            : "bg-gray-300 cursor-not-allowed"
-        }`}
-      >
+      {/* Aca cargamos un boton de nuestra libreria que Shadcn que es la que vamos a utilizar en nuestro UIX */}
+      <Button onClick={handleContinue} disabled={!modelsLoaded}>
         {modelsLoaded ? "Continuar" : "Cargando modelos..."}
-      </button>
+      </Button>
     </div>
   );
 };

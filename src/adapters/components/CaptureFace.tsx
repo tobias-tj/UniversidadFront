@@ -7,6 +7,7 @@ import {
 import { Student } from "../../domain/models/Student";
 import { handleCapture } from "../../usecases/students/handleCapture";
 import { getStudentDetails } from "../../infrastructure/api/studentApi";
+import { useLocation } from "react-router-dom";
 
 interface CaptureFaceProps {
   onCapture: (faceId: string) => void;
@@ -18,6 +19,9 @@ const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formUrl, setFormUrl] = useState<string | null>(null);
+
+  const location = useLocation();
+  const { studentName } = location.state;
 
   useEffect(() => {
     const initialize = async () => {
@@ -41,13 +45,13 @@ const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
       if (generatedFaceId) {
         setFaceId(generatedFaceId);
         // Ahora obtén los detalles del estudiante basados en el faceId
-        const estudianteDetails = await getStudentDetails(generatedFaceId);
+        const estudianteDetails = await getStudentDetails(studentName!);
         console.log("Detalles del estudiante: ", estudianteDetails);
-        console.log("FaceId generado: ", generatedFaceId);
+        console.log("FaceId generado: ", faceId);
         // Asegúrate de que estudianteDetails tenga los datos que necesitas
         const estudiante: Student = {
           name: estudianteDetails.name, // Usa el nombre obtenido
-          faceId: generatedFaceId, // El faceId recién generado
+          faceId: faceId!, // El faceId recién generado
           formUrl: estudianteDetails.formUrl, // Usa el formUrl obtenido
         };
 
@@ -55,7 +59,7 @@ const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
         setFormUrl(url);
         setShowForm(true);
         setIsCapturing(false);
-        onCapture(generatedFaceId);
+        onCapture(faceId!);
 
         // Una vez capturado el faceId, mantiene la cámara activa en segundo plano
         keepCameraActive(videoRef.current);
