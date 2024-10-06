@@ -4,9 +4,8 @@ import {
   keepCameraActive,
   startCamera,
 } from "../../usecases/students/faceRecognition";
-import { Student } from "../../domain/models/Student";
-import { handleCapture } from "../../usecases/students/handleCapture";
-import { getStudentDetails } from "../../infrastructure/api/studentApi";
+//import { Student } from "../../domain/models/Student";
+//import { handleCapture } from "../../usecases/students/handleCapture";
 import { useLocation } from "react-router-dom";
 
 interface CaptureFaceProps {
@@ -14,14 +13,13 @@ interface CaptureFaceProps {
 }
 
 const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
+  const location = useLocation();
+  const formUrl = location.state?.formUrl || "URL no disponible"; // Obtenemos formUrl desde el state
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [faceId, setFaceId] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [formUrl, setFormUrl] = useState<string | null>(null);
-
-  const location = useLocation();
-  const { studentName } = location.state;
 
   useEffect(() => {
     const initialize = async () => {
@@ -44,19 +42,9 @@ const CaptureFace: React.FC<CaptureFaceProps> = ({ onCapture }) => {
 
       if (generatedFaceId) {
         setFaceId(generatedFaceId);
-        // Ahora obtén los detalles del estudiante basados en el faceId
-        const estudianteDetails = await getStudentDetails(studentName!);
-        console.log("Detalles del estudiante: ", estudianteDetails);
         console.log("FaceId generado: ", faceId);
-        // Asegúrate de que estudianteDetails tenga los datos que necesitas
-        const estudiante: Student = {
-          name: estudianteDetails.name, // Usa el nombre obtenido
-          faceId: faceId!, // El faceId recién generado
-          formUrl: estudianteDetails.formUrl, // Usa el formUrl obtenido
-        };
 
-        const url = await handleCapture(estudiante);
-        setFormUrl(url);
+        //const url = await handleCapture(estudiante);
         setShowForm(true);
         setIsCapturing(false);
         onCapture(faceId!);
