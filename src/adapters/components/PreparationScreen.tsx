@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { initializefaceapi } from "../../usecases/students/faceRecognition";
-import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import axios from "axios";
+import { PreparationData } from "./data/PreparationData";
+import PreparationSingle from "./PreparationSingleScreen";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -45,37 +44,38 @@ const PreparationScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (modelsLoaded) {
-      navigate("/capture-face", { state: { formUrl } }); // Navega a la pantalla de captura facial
+      navigate("/capture-face", { state: { formUrl } });
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-[50%] bg-transparent">
-        <CardHeader>
-          <CardTitle>Preparación para el Reconocimiento Facial</CardTitle>
-          <CardDescription>Presta Atencion</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>
-            En la siguiente pantalla, te solicitaremos encender tu cámara. Por
-            favor, asegúrate de estar en un lugar tranquilo y sin distracciones
-            para poder capturar tu rostro correctamente.
-          </p>
-        </CardContent>
-        <CardFooter>
-          {/* Aca cargamos un boton de nuestra libreria que Shadcn que es la que vamos a utilizar en nuestro UIX */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleContinue}
-            disabled={!modelsLoaded}
-            className="p-2 text-white rounded-lg bg-primary"
-          >
-            {modelsLoaded ? "Continuar" : "Cargando modelos..."}
-          </motion.button>
-        </CardFooter>
-      </Card>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      {/* Título con el nombre de la empresa */}
+      <h1 className="mb-4 text-4xl font-bold text-center text-gray-800">
+        YvagaCore
+      </h1>
+
+      {/* Subtítulo o descripción opcional */}
+      <p className="mb-6 text-lg text-center text-gray-600">
+        Soluciones Tecnologicas.
+      </p>
+
+      <div className="w-full max-w-5xl">
+        <Carousel className="w-full h-full max-w-5xl">
+          <CarouselContent>
+            {PreparationData.map((prep) => (
+              <CarouselItem key={prep.id}>
+                <PreparationSingle
+                  key={prep.id}
+                  preparation={prep}
+                  handleContinue={handleContinue}
+                  modelsLoaded={modelsLoaded}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
     </div>
   );
 };
