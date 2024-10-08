@@ -15,6 +15,7 @@ const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
   const [modelsLoaded, setModelsLoaded] = useState<boolean>(false);
   const [searchParams] = useSearchParams();
+  const [createdId, setCreatedId] = useState("");
 
   const formUrl = searchParams.get("formUrl") || "URL no disponible";
   const id = searchParams.get("id") || "Id no disponible";
@@ -24,16 +25,26 @@ const PreparationScreen: React.FC = () => {
     const loadModels = async () => {
       await initializefaceapi();
       setModelsLoaded(true);
-      console.log(formUrl);
-      console.log(id);
-      console.log(code);
 
       try {
-        await axios.post("http://localhost:3000/api/manageExamUser", {
-          id,
-          code,
-        });
-        console.log("Datos enviados al backend correctamente");
+        const response = await axios.post(
+          "http://localhost:3000/api/manageExamUser",
+          {
+            id,
+            code,
+          }
+        );
+        if (response.status === 201) {
+          console.log("Datos enviados al backend correctamente");
+          const createdId = response.data.createdId;
+          console.log("ID creado: ", createdId);
+          setCreatedId(createdId);
+        } else {
+          console.error(
+            "Error al intentar vincular datos: ",
+            response.data.errors
+          );
+        }
       } catch (error) {
         console.error("Error al enviar los datos al backend: ", error);
       }
@@ -44,7 +55,7 @@ const PreparationScreen: React.FC = () => {
 
   const handleContinue = () => {
     if (modelsLoaded) {
-      navigate("/capture-face", { state: { formUrl } });
+      navigate("/capture-face", { state: { formUrl, createdId, code } });
     }
   };
 
