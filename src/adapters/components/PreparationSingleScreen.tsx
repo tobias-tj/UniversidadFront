@@ -13,16 +13,15 @@ interface PreparationProps {
     id: number;
     title: string;
     description: string;
-    animation: Animation;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    animation: any;
   };
   handleContinue: () => void;
-  modelsLoaded: boolean;
 }
 
 const PreparationSingle: React.FC<PreparationProps> = ({
   preparation,
   handleContinue,
-  modelsLoaded,
 }) => {
   const defaultOptions = {
     loop: true,
@@ -56,10 +55,9 @@ const PreparationSingle: React.FC<PreparationProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={handleContinue}
-              disabled={!modelsLoaded}
               className="p-2 text-white rounded-lg bg-primary"
             >
-              {modelsLoaded ? "Continuar" : "Cargando modelos..."}
+              Continuar
             </motion.button>
           </CardFooter>
         )}

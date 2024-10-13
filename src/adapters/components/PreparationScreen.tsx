@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { initializefaceapi } from "../../usecases/students/faceRecognition";
-
-import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useExamUser } from "@/usecases/useExamUser";
 import { PreparationData } from "./data/PreparationData";
 import PreparationSingle from "./PreparationSingleScreen";
 import {
@@ -13,50 +11,47 @@ import {
 
 const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
-  const [modelsLoaded, setModelsLoaded] = useState<boolean>(false);
-  const [searchParams] = useSearchParams();
+  const { firstProcess, createExamUser, error } = useExamUser();
   const [createdId, setCreatedId] = useState("");
 
-  const formUrl = searchParams.get("formUrl") || "URL no disponible";
-  const id = searchParams.get("id") || "Id no disponible";
-  const code = searchParams.get("code") || "Code no disponible";
+  const location = useLocation();
+  const formId = location.state?.formId;
+  const formUrl = location.state?.formUrl;
+  const userId = location.state?.userId;
+  const fullname = location.state?.fullname;
+  const courseName = location.state?.courseName;
+  const email = location.state?.email;
 
   useEffect(() => {
-    const loadModels = async () => {
-      await initializefaceapi();
-      setModelsLoaded(true);
-
-      try {
-        const response = await axios.post(
-          "http://localhost:3000/api/manageExamUser",
-          {
-            id,
-            code,
-          }
-        );
-        if (response.status === 201) {
-          console.log("Datos enviados al backend correctamente");
-          const createdId = response.data.createdId;
-          console.log("ID creado: ", createdId);
-          setCreatedId(createdId);
+    const initiateProcess = async () => {
+      // Primero, inicia el examen
+      const examStarted = await firstProcess(
+        formId,
+        userId,
+        fullname,
+        courseName,
+        email
+      );
+      if (examStarted) {
+        // Luego, si el examen se inició correctamente, creamos el usuario del examen
+        const newCreatedId = await createExamUser(formId, userId);
+        if (newCreatedId) {
+          setCreatedId(newCreatedId);
+          console.log("Proceso completado: formulario y usuario sincronizados");
         } else {
-          console.error(
-            "Error al intentar vincular datos: ",
-            response.data.errors
-          );
+          console.error("Error al crear el usuario del examen", error);
         }
-      } catch (error) {
-        console.error("Error al enviar los datos al backend: ", error);
+      } else {
+        console.error("Error al iniciar el examen", error);
       }
     };
-    loadModels();
+
+    initiateProcess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleContinue = () => {
-    if (modelsLoaded) {
-      navigate("/capture-face", { state: { formUrl, createdId, code } });
-    }
+    navigate("/capture-face", { state: { formUrl, createdId, userId } });
   };
 
   return (
@@ -80,7 +75,6 @@ const PreparationScreen: React.FC = () => {
                   key={prep.id}
                   preparation={prep}
                   handleContinue={handleContinue}
-                  modelsLoaded={modelsLoaded}
                 />
               </CarouselItem>
             ))}

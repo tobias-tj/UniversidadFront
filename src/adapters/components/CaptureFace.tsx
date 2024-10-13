@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  captureFace,
-  startCamera,
-} from "../../usecases/students/faceRecognition";
+import React, { useEffect, useRef } from "react";
+import { startCamera } from "@/usecases/useStartCam";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useFaceApi } from "@/usecases/useFaceApi";
 
 const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [faceId, setFaceId] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { uploadFaceImage } = useFaceApi();
+
+  const documentId = location.state?.userId;
 
   useEffect(() => {
     const initialize = async () => {
@@ -20,20 +20,21 @@ const CaptureFace: React.FC = () => {
     initialize();
   }, []);
 
-  const capturaCara = async () => {
+  const handleCapture = async () => {
     if (videoRef.current) {
-      const generatedFaceId = await captureFace(videoRef.current);
-      if (generatedFaceId) {
-        setFaceId(generatedFaceId);
-        console.log("FaceId generado: ", generatedFaceId);
-        // Redirige a la pantalla de cargando y pasa el faceId
-        navigate("/loading", { state: { faceId: generatedFaceId, ...location.state } });
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const context = canvas.getContext("2d");
+      context?.drawImage(videoRef.current, 0, 0);
+      const imageData = canvas.toDataURL("image/jpeg");
+
+      const success = await uploadFaceImage(imageData, documentId);
+      if (success) {
+        // Redirige a la pantalla de cargando o donde sea necesario
+        navigate("/form", { state: { ...location.state } });
       }
     }
-  };
-
-  const handlePlay = () => {
-    capturaCara();
   };
 
   return (
@@ -45,9 +46,9 @@ const CaptureFace: React.FC = () => {
         width="720"
         height="560"
         id="inputVideo"
-        onPlay={handlePlay}
-        style={{ display: faceId ? "none" : "block" }}
+        style={{ display: "block" }}
       />
+      <button onClick={handleCapture}>Estoy listo</button>
     </div>
   );
 };
