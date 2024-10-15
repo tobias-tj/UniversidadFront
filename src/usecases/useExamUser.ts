@@ -27,36 +27,6 @@ export const useExamUser = () => {
         data
       );
       if (response.status === 201) {
-        console.log(
-          "Proceso de creación de usuario y examen finalizado con éxito."
-        );
-        return true;
-      } else {
-        throw new Error("Error en el proceso de creación de usuario y examen.");
-      }
-    } catch (error) {
-      // Verifica si el error tiene un mensaje y lo asigna
-      if (axios.isAxiosError(error) && error.response) {
-        setError(error.response.data.message || "Error en la petición");
-      } else if (error instanceof Error) {
-        setError(error.message || "Error en la petición");
-      } else {
-        setError("Error desconocido");
-      }
-      return false;
-    }
-  };
-
-  const createExamUser = async (formId: number, userId: number) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/manageExamUser",
-        {
-          formId,
-          userId,
-        }
-      );
-      if (response.status === 201) {
         console.log("Usuario y examen sincronizado correctamente");
         return response.data.createdId;
       } else {
@@ -74,6 +44,5 @@ export const useExamUser = () => {
       return null;
     }
   };
-
-  return { firstProcess, createExamUser, error };
+  return { firstProcess, error };
 };

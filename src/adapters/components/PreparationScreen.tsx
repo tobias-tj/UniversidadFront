@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useExamUser } from "@/usecases/useExamUser";
 import { PreparationData } from "./data/PreparationData";
 import PreparationSingle from "./PreparationSingleScreen";
 import {
@@ -11,47 +10,16 @@ import {
 
 const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { firstProcess, createExamUser, error } = useExamUser();
-  const [createdId, setCreatedId] = useState("");
 
   const location = useLocation();
-  const formId = location.state?.formId;
+  const createdId = location.state?.formId;
   const formUrl = location.state?.formUrl;
   const userId = location.state?.userId;
-  const fullname = location.state?.fullname;
-  const courseName = location.state?.courseName;
-  const email = location.state?.email;
-
-  useEffect(() => {
-    const initiateProcess = async () => {
-      // Primero, inicia el examen
-      const examStarted = await firstProcess(
-        formId,
-        userId,
-        fullname,
-        courseName,
-        email
-      );
-      if (examStarted) {
-        // Luego, si el examen se inició correctamente, creamos el usuario del examen
-        const newCreatedId = await createExamUser(formId, userId);
-        if (newCreatedId) {
-          setCreatedId(newCreatedId);
-          console.log("Proceso completado: formulario y usuario sincronizados");
-        } else {
-          console.error("Error al crear el usuario del examen", error);
-        }
-      } else {
-        console.error("Error al iniciar el examen", error);
-      }
-    };
-
-    initiateProcess();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleContinue = () => {
-    navigate("/capture-face", { state: { formUrl, createdId, userId } });
+    navigate("/capture-face", {
+      state: { formUrl, createdId, userId, isNewUser: true },
+    });
   };
 
   return (

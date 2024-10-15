@@ -7,9 +7,11 @@ const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { uploadFaceImage } = useFaceApi();
+  const { uploadFaceImage, validateFaceImage } = useFaceApi();
 
   const documentId = location.state?.userId;
+
+  const isNewUser = location.state?.isNewUser; // Verificar si el usuario es nuevo o recurrente
 
   useEffect(() => {
     const initialize = async () => {
@@ -29,9 +31,18 @@ const CaptureFace: React.FC = () => {
       context?.drawImage(videoRef.current, 0, 0);
       const imageData = canvas.toDataURL("image/jpeg");
 
-      const success = await uploadFaceImage(imageData, documentId);
+      let success = false;
+
+      if (isNewUser) {
+        // Si es nuevo usuario, crea el rostro en el backend
+        success = await uploadFaceImage(imageData, documentId);
+      } else {
+        // Si es usuario recurrente, valida el rostro
+        success = await validateFaceImage(imageData, documentId);
+      }
+
       if (success) {
-        // Redirige a la pantalla de cargando o donde sea necesario
+        // Redirige a la siguiente pantalla después de la validación o subida
         navigate("/form", { state: { ...location.state } });
       }
     }

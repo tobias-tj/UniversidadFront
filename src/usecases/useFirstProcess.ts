@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useExamUser } from "./useExamUser";
 
 const useFirstProcess = (
   userId: string | null,
@@ -11,6 +12,7 @@ const useFirstProcess = (
   email: string | null
 ) => {
   const navigate = useNavigate();
+  const { firstProcess } = useExamUser(); // Traer lógica de sincronización
 
   useEffect(() => {
     const sendUserIdToBackend = async () => {
@@ -28,17 +30,44 @@ const useFirstProcess = (
           console.log("UserId enviado al backend correctamente");
           console.log(response.data);
 
-          setTimeout(() => {
+          const createdId = await firstProcess(
+            Number(formId),
+            Number(userId),
+            fullname!,
+            courseName!,
+            email!
+          );
+
+          setTimeout(async () => {
             if (!response.data.isExist) {
               console.log("Inicia proceso para usuario Nuevo. (Tutorial)");
-              navigate("/preparation", {
-                state: { userId, formId, formUrl, fullname, courseName, email },
-              });
+              if (createdId) {
+                console.log("El proceso de sincronizacion con exito");
+                navigate("/preparation", {
+                  state: {
+                    createdId,
+                    userId,
+                    formId,
+                    formUrl,
+                    fullname,
+                    courseName,
+                    email,
+                  },
+                });
+              }
             } else {
-              console.log(
-                "Inicia proceso para usuario registrado. (Checkout FaceId)"
-              );
-              navigate("/capture-face", { state: { userId, formId, formUrl } });
+              if (createdId) {
+                console.log("El proceso de sincronizacion con exito");
+                navigate("/capture-face", {
+                  state: {
+                    createdId,
+                    userId,
+                    formId,
+                    formUrl,
+                    isNewUser: false,
+                  },
+                });
+              }
             }
           }, 2000);
         } else {
@@ -50,7 +79,16 @@ const useFirstProcess = (
     };
 
     sendUserIdToBackend();
-  }, [userId, formId, formUrl, navigate]);
+  }, [
+    userId,
+    formId,
+    formUrl,
+    navigate,
+    firstProcess,
+    fullname,
+    courseName,
+    email,
+  ]);
 };
 
 export default useFirstProcess;
