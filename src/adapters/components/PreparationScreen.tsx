@@ -12,7 +12,7 @@ const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const createdId = location.state?.formId;
+  const createdId = location.state?.createdId;
   const formUrl = location.state?.formUrl;
   const userId = location.state?.userId;
 
