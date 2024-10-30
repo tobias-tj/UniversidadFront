@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Lottie from "react-lottie";
+import { MoveLeft, MoveRight } from "lucide-react";
 
 interface PreparationProps {
   preparation: {
@@ -17,11 +18,15 @@ interface PreparationProps {
     animation: any;
   };
   handleContinue: () => void;
+  carouselPrevious: () => void;
+  carouselNext: () => void;
 }
 
 const PreparationSingle: React.FC<PreparationProps> = ({
   preparation,
   handleContinue,
+  carouselNext,
+  carouselPrevious
 }) => {
   const defaultOptions = {
     loop: true,
@@ -42,12 +47,19 @@ const PreparationSingle: React.FC<PreparationProps> = ({
           <p className="text-center text-balance">{preparation.description}</p>
         </CardContent>
         <div className="flex justify-center p-4">
+          <button onClick={carouselPrevious} className="my-auto h-full px-5">
+          <MoveLeft  />
+        </button>
+          
           <Lottie
             options={defaultOptions}
             height={200}
             width={180}
             speed={1.5}
           />
+          <button onClick={carouselNext} className="my-auto h-full px-5">
+            <MoveRight />
+          </button>
         </div>
         {preparation.id === 4 && (
           <CardFooter className="flex justify-end">

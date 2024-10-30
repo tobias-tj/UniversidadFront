@@ -6,10 +6,10 @@ const FormScreen: React.FC = () => {
   const location = useLocation();
   const formUrl = location.state?.formUrl || "";
   const createdId = location.state?.createdId;
-
+  console.log("createdId en FormScreen = " + createdId)
+  // Le Manda mal aca
   // Usar el hook para manejar el tiempo del examen
   useTimeExam({ createdId, formUrl });
-
   return (
     <div>
       <p>Iniciando el examen...</p>

@@ -79,6 +79,7 @@ const useFirstProcess = (
     };
 
     sendUserIdToBackend();
+    console.log("FormId en useFirstProcess = " + formId)
   }, [
     userId,
     formId,
