@@ -34,14 +34,16 @@ const PreparationScreen: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       {/* Título con el nombre de la empresa */}
-      <h1 className="mb-4 text-4xl font-bold text-center text-gray-800">
-        YvagaCore
-      </h1>
+      <div className="mb-4 text-4xl font-bold text-center text-gray-800">
+        {/* YvagaCore */}
+        <img src="/Vector.png" className="w-28 h-32"/>
+
+      </div>
 
       {/* Subtítulo o descripción opcional */}
-      <p className="mb-6 text-lg text-center text-gray-600">
+      {/* <p className="mb-6 text-lg text-center text-gray-600">
         Soluciones Tecnologicas.
-      </p>
+      </p> */}
 
       <div className="w-full max-w-5xl">
         <Carousel

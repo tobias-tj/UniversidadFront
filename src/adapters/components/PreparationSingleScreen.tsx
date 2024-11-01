@@ -26,7 +26,7 @@ const PreparationSingle: React.FC<PreparationProps> = ({
   preparation,
   handleContinue,
   carouselNext,
-  carouselPrevious
+  carouselPrevious,
 }) => {
   const defaultOptions = {
     loop: true,
@@ -47,10 +47,14 @@ const PreparationSingle: React.FC<PreparationProps> = ({
           <p className="text-center text-balance">{preparation.description}</p>
         </CardContent>
         <div className="flex justify-center p-4">
-          <button onClick={carouselPrevious} className="my-auto h-full px-5">
-          <MoveLeft  />
-        </button>
-          
+          {preparation.id === 0 ? (
+            <></>
+          ) : (
+            <button onClick={carouselPrevious} className="my-auto h-full px-5">
+              <MoveLeft />
+            </button>
+          )}
+
           <Lottie
             options={defaultOptions}
             height={200}
