@@ -2,7 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { startCamera } from "@/usecases/useStartCam";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFaceApi } from "@/usecases/useFaceApi";
-
+import { motion } from "framer-motion";
+import { Camera } from "lucide-react";
 const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const navigate = useNavigate();
@@ -49,17 +50,29 @@ const CaptureFace: React.FC = () => {
   };
 
   return (
-    <div>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        width="720"
-        height="560"
-        id="inputVideo"
-        style={{ display: "block" }}
-      />
-      <button onClick={handleCapture}>Estoy listo</button>
+    <div className="bg-gray-100 h-full w-full">
+      <div className="mx-auto py-[10vh] h-screen w-full ">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          width="720"
+          height="560"
+          id="inputVideo"
+          style={{ display: "block" }}
+          className="mx-auto border rounded-lg"
+        />
+        <div className="flex w-10/12 justify-end mx-auto">
+          <motion.button
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleCapture}
+            className="p-6 text-white rounded-lg bg-primary mx-auto my-10 flex"
+          >
+            Estoy listo <Camera className="mx-2" />
+          </motion.button>
+        </div>
+      </div>
     </div>
   );
 };

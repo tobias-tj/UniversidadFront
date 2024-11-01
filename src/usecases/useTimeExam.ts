@@ -30,6 +30,8 @@ const useTimeExam = ({ createdId, formUrl }: UseTimeExamProps) => {
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
+        console.log("createdId en useTimeExam = " + createdId);
+        
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
           { createdId }

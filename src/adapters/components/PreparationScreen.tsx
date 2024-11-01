@@ -4,6 +4,7 @@ import { PreparationData } from "./data/PreparationData";
 import PreparationSingle from "./PreparationSingleScreen";
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
@@ -21,21 +22,37 @@ const PreparationScreen: React.FC = () => {
       state: { formUrl, createdId, userId, isNewUser: true },
     });
   };
+  const carouselRef = React.useRef<CarouselApi | null>(null);
+  const scrollNext = () => {
+    carouselRef.current?.scrollNext();
+  };
+
+  const scrollPrev = () => {
+    carouselRef.current?.scrollPrev();
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       {/* Título con el nombre de la empresa */}
-      <h1 className="mb-4 text-4xl font-bold text-center text-gray-800">
-        YvagaCore
-      </h1>
+      <div className="mb-4 text-4xl font-bold text-center text-gray-800">
+        {/* YvagaCore */}
+        <img src="/Vector.png" className="w-28 h-32"/>
+
+      </div>
 
       {/* Subtítulo o descripción opcional */}
-      <p className="mb-6 text-lg text-center text-gray-600">
+      {/* <p className="mb-6 text-lg text-center text-gray-600">
         Soluciones Tecnologicas.
-      </p>
+      </p> */}
 
       <div className="w-full max-w-5xl">
-        <Carousel className="w-full h-full max-w-5xl">
+        <Carousel
+          className="w-full h-full max-w-5xl"
+          setApi={(api) => {
+            // Aquí se guarda la API del carrusel para poder invocar los métodos desde el padre.
+            carouselRef.current = api;
+          }}
+        >
           <CarouselContent>
             {PreparationData.map((prep) => (
               <CarouselItem key={prep.id}>
@@ -43,11 +60,16 @@ const PreparationScreen: React.FC = () => {
                   key={prep.id}
                   preparation={prep}
                   handleContinue={handleContinue}
+                  carouselNext={scrollNext}
+                  carouselPrevious={scrollPrev}
                 />
               </CarouselItem>
             ))}
           </CarouselContent>
         </Carousel>
+        <div className="w-full text-center my-auto pt-8">
+          <span className="font-semibold opacity-50">Power By YvagaCore</span>
+        </div>
       </div>
     </div>
   );
