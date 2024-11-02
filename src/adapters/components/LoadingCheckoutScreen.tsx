@@ -9,22 +9,20 @@ const LoadingCheckoutScreen: React.FC = () => {
 
   // Obtener el userId de los parámetros de la URL
   const queryParams = new URLSearchParams(location.search);
-  const userId = queryParams.get("userId");
-  const formId = queryParams.get("formId");
-  const formUrl = queryParams.get("formUrl");
-  const firstname = queryParams.get("firstname");
-  const lastname = queryParams.get("lastname");
-  const courseName = queryParams.get("courseName");
-  const email = queryParams.get("email");
+  // const userId = queryParams.get("userId");
+  // const formId = queryParams.get("formId");
+  // const formUrl = queryParams.get("formUrl");
+  // const firstname = queryParams.get("firstname");
+  // const lastname = queryParams.get("lastname");
+  // const courseName = queryParams.get("courseName");
+  // const email = queryParams.get("email");
 
-  const fullname = `${firstname} ${lastname}`.trim();
+  // const fullname = `${firstname} ${lastname}`.trim();
 
-  console.log("Exam Id:", formId);
-  console.log("FormUrl:", formUrl);
-  console.log("User Id:", userId);
-  console.log("FullName:", fullname);
-  console.log("Course Name:", courseName);
-  console.log("Email:", email);
+  const token = queryParams.get("token");
+  // Guardar el token en el local storage
+  localStorage.setItem("Token", token || "TOKEN-EMPTY");
+  console.log(token);
 
   const defaultOptions = {
     loop: true,
@@ -35,7 +33,8 @@ const LoadingCheckoutScreen: React.FC = () => {
     },
   };
 
-  useFirstProcess(userId, formId, formUrl, fullname, courseName, email);
+  // useFirstProcess(userId, formId, formUrl, fullname, courseName, email);
+  useFirstProcess();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">

@@ -4,11 +4,10 @@ import useTimeExam from "@/usecases/useTimeExam";
 
 const FormScreen: React.FC = () => {
   const location = useLocation();
-  const formUrl = location.state?.formUrl || "";
   const createdId = location.state?.createdId;
-  console.log("createdId en FormScreen = " + createdId)
+  console.log("createdId en FormScreen = " + createdId);
   // Usar el hook para manejar el tiempo del examen
-  useTimeExam({ createdId, formUrl });
+  useTimeExam({ createdId });
   return (
     <div>
       <p>Iniciando el examen...</p>

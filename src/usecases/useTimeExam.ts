@@ -3,11 +3,12 @@ import axios from "axios";
 
 interface UseTimeExamProps {
   createdId: string | undefined;
-  formUrl: string | undefined;
 }
 
-const useTimeExam = ({ createdId, formUrl }: UseTimeExamProps) => {
+const useTimeExam = ({ createdId }: UseTimeExamProps) => {
   // Definir sendTimeFinish usando useCallback
+  const token = localStorage.getItem("Token");
+
   const sendTimeFinish = useCallback(async () => {
     try {
       const response = await axios.patch(
@@ -31,17 +32,17 @@ const useTimeExam = ({ createdId, formUrl }: UseTimeExamProps) => {
     const sendTimeStart = async () => {
       try {
         console.log("createdId en useTimeExam = " + createdId);
-        
+
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
-          { createdId }
+          { createdId, token }
         );
         if (response.status === 200) {
           console.log("Tiempo de examen iniciado correctamente.");
 
           // Abrir una nueva ventana emergente con el formulario de Moodle
           const examWindow = window.open(
-            formUrl,
+            response.data.formUrl,
             "_blank",
             "width=800,height=600"
           );
@@ -73,10 +74,10 @@ const useTimeExam = ({ createdId, formUrl }: UseTimeExamProps) => {
       }
     };
 
-    if (createdId && formUrl) {
+    if (createdId) {
       sendTimeStart();
     }
-  }, [createdId, formUrl, sendTimeFinish]);
+  }, [createdId, sendTimeFinish]);
 
   // useEffect para el listener de mensaje
   useEffect(() => {

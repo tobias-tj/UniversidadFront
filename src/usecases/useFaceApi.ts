@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const useFaceApi = () => {
-  const uploadFaceImage = async (image: string, documentId: string) => {
+  const uploadFaceImage = async (image: string, token: string) => {
     try {
       // Convertir la imagen en base64 a Blob si es necesario
       const response = await fetch(image);
@@ -9,10 +9,10 @@ export const useFaceApi = () => {
 
       const formData = new FormData();
       formData.append("image", blob, "face-image.jpg"); // Aquí le damos un nombre de archivo
-      formData.append("document_id", documentId);
+      formData.append("token", token);
 
       console.log("Imagen para enviar al back-->", blob);
-      console.log("DocumentId para enviar al back-->", documentId);
+      console.log("DocumentId para enviar al back-->", token);
 
       const responseUpload = await axios.post(
         "http://localhost:8000/create-face/",
@@ -44,14 +44,14 @@ export const useFaceApi = () => {
   };
 
   // Función para validar la imagen de la cara de un usuario recurrente
-  const validateFaceImage = async (image: string, documentId: string) => {
+  const validateFaceImage = async (image: string, token: string) => {
     try {
       const response = await fetch(image);
       const blob = await response.blob();
 
       const formData = new FormData();
       formData.append("image", blob, "face-image.jpg");
-      formData.append("document_id", documentId);
+      formData.append("token", token);
 
       console.log("Validando imagen de usuario recurrente", blob);
 
