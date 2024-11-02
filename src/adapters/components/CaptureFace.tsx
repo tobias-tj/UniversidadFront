@@ -9,10 +9,11 @@ const CaptureFace: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { uploadFaceImage, validateFaceImage } = useFaceApi();
-
-  const documentId = location.state?.userId;
+  const token = localStorage.getItem("Token");
 
   const isNewUser = location.state?.isNewUser; // Verificar si el usuario es nuevo o recurrente
+
+  console.log(isNewUser);
 
   useEffect(() => {
     const initialize = async () => {
@@ -36,10 +37,10 @@ const CaptureFace: React.FC = () => {
 
       if (isNewUser) {
         // Si es nuevo usuario, crea el rostro en el backend
-        success = await uploadFaceImage(imageData, documentId);
+        success = await uploadFaceImage(imageData, token!);
       } else {
         // Si es usuario recurrente, valida el rostro
-        success = await validateFaceImage(imageData, documentId);
+        success = await validateFaceImage(imageData, token!);
       }
 
       if (success) {

@@ -14,12 +14,10 @@ const PreparationScreen: React.FC = () => {
 
   const location = useLocation();
   const createdId = location.state?.createdId;
-  const formUrl = location.state?.formUrl;
-  const userId = location.state?.userId;
 
   const handleContinue = () => {
     navigate("/capture-face", {
-      state: { formUrl, createdId, userId, isNewUser: true },
+      state: { createdId, isNewUser: true },
     });
   };
   const carouselRef = React.useRef<CarouselApi | null>(null);
@@ -36,8 +34,7 @@ const PreparationScreen: React.FC = () => {
       {/* Título con el nombre de la empresa */}
       <div className="mb-4 text-4xl font-bold text-center text-gray-800">
         {/* YvagaCore */}
-        <img src="/Vector.png" className="w-28 h-32"/>
-
+        <img src="/Vector.png" className="h-32 w-28" />
       </div>
 
       {/* Subtítulo o descripción opcional */}
@@ -67,7 +64,7 @@ const PreparationScreen: React.FC = () => {
             ))}
           </CarouselContent>
         </Carousel>
-        <div className="w-full text-center my-auto pt-8">
+        <div className="w-full pt-8 my-auto text-center">
           <span className="font-semibold opacity-50">Power By YvagaCore</span>
         </div>
       </div>

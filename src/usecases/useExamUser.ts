@@ -3,23 +3,14 @@ import axios from "axios";
 
 export const useExamUser = () => {
   const [error, setError] = useState<string | null>(null);
+  const token = localStorage.getItem("Token");
 
-  const firstProcess = async (
-    formId: number,
-    userId: number,
-    fullname: string,
-    courseName: string,
-    email: string
-  ) => {
+  const firstProcess = async () => {
     try {
       const data = {
         estado: "pendiente",
         rol: "EST",
-        idFormulario: formId,
-        idUsuario: userId,
-        fullname: fullname,
-        courseName: courseName,
-        email: email,
+        token,
       };
 
       const response = await axios.post(
