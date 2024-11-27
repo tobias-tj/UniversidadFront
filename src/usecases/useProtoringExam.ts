@@ -1,11 +1,11 @@
 import { useEffect, useCallback } from "react";
 import axios from "axios";
 
-interface UseTimeExamProps {
+interface useProtoringExamProps {
   createdId: string | undefined;
 }
 
-const useTimeExam = ({ createdId }: UseTimeExamProps) => {
+const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
 
   const sendTimeFinish = useCallback(async () => {
@@ -43,8 +43,8 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
 
-      for (let i = 0; i < 5; i++) {
-        // Capturar 5 imágenes
+      for (let i = 0; i < 10; i++) {
+        // Capturar 10 imágenes
         context!.drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL("image/jpeg");
         captures.push(dataUrl);
@@ -57,7 +57,7 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
 
       // Enviar capturas al backend
       await axios.post("http://localhost:8000/proctoring-exam/", {
-        // createdId,
+        createdId,
         images: captures,
         token,
       });
@@ -71,7 +71,7 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
-        console.log("createdId en useTimeExam = " + createdId);
+        console.log("createdId en useProtoringExam = " + createdId);
 
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
@@ -103,7 +103,7 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
 
           // Iniciar el intervalo de capturas cada 30 segundos
           // const captureInterval = setInterval(captureAndSendImages, 30000);
-          const captureInterval = setInterval(captureAndSendImages, 9000);
+          const captureInterval = setInterval(captureAndSendImages, 15000);
 
           return () => {
             clearInterval(examInterval);
@@ -144,4 +144,4 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
   }, []);
 };
 
-export default useTimeExam;
+export default useProtoringExam;
