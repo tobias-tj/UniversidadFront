@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useFaceApi } from "@/usecases/useFaceApi";
 import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
+
 const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const navigate = useNavigate();
@@ -11,9 +12,7 @@ const CaptureFace: React.FC = () => {
   const { uploadFaceImage, validateFaceImage } = useFaceApi();
   const token = localStorage.getItem("Token");
 
-  const isNewUser = location.state?.isNewUser; // Verificar si el usuario es nuevo o recurrente
-
-  console.log(isNewUser);
+  const isNewUser = location.state?.isNewUser;
 
   useEffect(() => {
     const initialize = async () => {
@@ -36,44 +35,57 @@ const CaptureFace: React.FC = () => {
       let success = false;
 
       if (isNewUser) {
-        // Si es nuevo usuario, crea el rostro en el backend
         success = await uploadFaceImage(imageData, token!);
       } else {
-        // Si es usuario recurrente, valida el rostro
         success = await validateFaceImage(imageData, token!);
       }
 
       if (success) {
-        // Redirige a la siguiente pantalla después de la validación o subida
         navigate("/form", { state: { ...location.state } });
       }
     }
   };
 
   return (
-    <div className="w-full h-full bg-gray-200">
-      <div className="mx-auto py-[10vh] h-screen w-full ">
+    <div className="w-full h-screen bg-gray-200 flex flex-col justify-center items-center">
+      <div className="relative w-[720px] max-w-full">
+        {/* Video */}
         <video
           ref={videoRef}
           autoPlay
           muted
-          width="720"
-          height="560"
           id="inputVideo"
-          style={{ display: "block" }}
-          className="mx-auto border rounded-lg"
+          className="w-full h-auto border rounded-lg transform scale-x-[-1]"
         />
-        <div className="flex justify-end w-10/12 mx-auto">
-          <motion.button
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleCapture}
-            className="flex p-6 mx-auto my-10 text-white rounded-lg bg-primary"
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-72 h-72 stroke-gray-600 opacity-50"
+            viewBox="0 0 100 100"
           >
-            Estoy listo <Camera className="mx-2" />
-          </motion.button>
+            <rect
+              x="5"
+              y="5"
+              width="90"
+              height="90"
+              fill="none"
+              strokeDasharray="5 5"
+              strokeWidth="2"
+            />
+          </svg>
         </div>
       </div>
+
+      {/* Botón */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleCapture}
+        className="w-[720px] max-w-full mt-6 py-4 text-white rounded-lg bg-primary flex items-center justify-center"
+      >
+        Estoy listo <Camera className="ml-2" />
+      </motion.button>
     </div>
   );
 };

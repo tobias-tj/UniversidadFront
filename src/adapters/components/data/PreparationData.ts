@@ -2,7 +2,7 @@
 import animation1 from "@/assets/lottie/animation1.json";
 import animation2 from "@/assets/lottie/animationnew.json";
 import animation3 from "@/assets/lottie/animationnew2.json";
-import animation4 from "@/assets/lottie/animationnew3.json";
+import animation4 from "@/assets/lottie/person_move.json";
 
 export const PreparationData = [
   {

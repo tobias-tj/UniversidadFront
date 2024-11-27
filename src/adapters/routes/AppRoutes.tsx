@@ -7,6 +7,7 @@ import LoadingCheckoutScreen from "../components/LoadingCheckoutScreen";
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<LoadingCheckoutScreen />}></Route>
       <Route
         path="/loading-checkout"
         element={<LoadingCheckoutScreen />}
