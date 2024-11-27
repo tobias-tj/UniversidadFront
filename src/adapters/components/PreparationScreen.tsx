@@ -8,7 +8,8 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-
+import Lottie from "react-lottie";
+import robot from "@/assets/lottie/robot.json";
 const PreparationScreen: React.FC = () => {
   const navigate = useNavigate();
 
@@ -29,12 +30,22 @@ const PreparationScreen: React.FC = () => {
     carouselRef.current?.scrollPrev();
   };
 
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: robot,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       {/* Título con el nombre de la empresa */}
       <div className="mb-4 text-4xl font-bold text-center text-gray-800">
         {/* YvagaCore */}
-        <img src="/Vector.png" className="h-32 w-28" />
+        {/* <img src="/Vector.png" className="h-32 w-28" /> */}
+        <Lottie options={defaultOptions} height={200} width={180} speed={1.5} />
       </div>
 
       {/* Subtítulo o descripción opcional */}
