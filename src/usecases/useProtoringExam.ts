@@ -1,12 +1,11 @@
 import { useEffect, useCallback } from "react";
 import axios from "axios";
 
-interface UseTimeExamProps {
+interface useProtoringExamProps {
   createdId: string | undefined;
 }
 
-const useTimeExam = ({ createdId }: UseTimeExamProps) => {
-  // Definir sendTimeFinish usando useCallback
+const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
 
   const sendTimeFinish = useCallback(async () => {
@@ -28,10 +27,51 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
     }
   }, [createdId]);
 
+  // Capturar 3-5 imágenes y enviarlas al backend
+  const captureAndSendImages = useCallback(async () => {
+    if (!createdId) return;
+
+    try {
+      // Obtener la cámara
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      await new Promise((resolve) => (video.onloadedmetadata = resolve));
+      video.play();
+
+      const captures = [];
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      for (let i = 0; i < 10; i++) {
+        // Capturar 10 imágenes
+        context!.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        captures.push(dataUrl);
+        await new Promise((resolve) => setTimeout(resolve, 100)); // Pausa de 100ms entre capturas
+      }
+
+      // Parar el video y liberar la cámara
+      video.pause();
+      stream.getTracks().forEach((track) => track.stop());
+
+      // Enviar capturas al backend
+      await axios.post("http://localhost:8000/proctoring-exam/", {
+        createdId,
+        images: captures,
+        token,
+      });
+
+      console.log("Capturas enviadas al backend.");
+    } catch (error) {
+      console.error("Error al capturar o enviar imágenes: ", error);
+    }
+  }, [createdId, token]);
+
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
-        console.log("createdId en useTimeExam = " + createdId);
+        console.log("createdId en useProtoringExam = " + createdId);
 
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
@@ -40,32 +80,35 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
         if (response.status === 200) {
           console.log("Tiempo de examen iniciado correctamente.");
 
-          // Abrir una nueva ventana emergente con el formulario de Moodle
           const examWindow = window.open(
             response.data.formUrl,
             "_blank",
             "width=800,height=600"
           );
 
-          // Comprobar si la ventana se ha abierto correctamente
           if (!examWindow) {
             console.error("No se pudo abrir la ventana emergente.");
             return;
           }
 
-          // Monitorear si la ventana emergente se cierra
           const examInterval = setInterval(() => {
             if (examWindow.closed) {
               console.log(
                 "El examen ha terminado, cerrando ventana emergente."
               );
               clearInterval(examInterval);
-              sendTimeFinish(); // Llamar a la función de finalización del examen
+              sendTimeFinish();
             }
           }, 1000);
 
-          // Limpiar el intervalo cuando el componente se desmonte
-          return () => clearInterval(examInterval);
+          // Iniciar el intervalo de capturas cada 30 segundos
+          // const captureInterval = setInterval(captureAndSendImages, 30000);
+          const captureInterval = setInterval(captureAndSendImages, 15000);
+
+          return () => {
+            clearInterval(examInterval);
+            clearInterval(captureInterval); // Limpiar el intervalo al desmontar
+          };
         } else {
           console.error("Error al iniciar el tiempo del examen.");
         }
@@ -77,9 +120,8 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
     if (createdId) {
       sendTimeStart();
     }
-  }, [createdId, sendTimeFinish]);
+  }, [createdId, sendTimeFinish, captureAndSendImages]);
 
-  // useEffect para el listener de mensaje
   useEffect(() => {
     const handleMessage = (event) => {
       if (
@@ -87,7 +129,6 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
         event.data === "exam-finished"
       ) {
         console.log("Examen completado, cerrando ventana emergente.");
-        // Buscar la referencia de la ventana emergente si sigue abierta
         const examWindow = window.open("", "_blank");
         if (examWindow && !examWindow.closed) {
           examWindow.close();
@@ -103,4 +144,4 @@ const useTimeExam = ({ createdId }: UseTimeExamProps) => {
   }, []);
 };
 
-export default useTimeExam;
+export default useProtoringExam;
