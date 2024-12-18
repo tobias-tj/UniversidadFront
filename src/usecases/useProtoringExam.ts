@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useReportApi } from "./useReportApi";
+import { useToast } from "@/hooks/use-toast";
 
 interface useProtoringExamProps {
   createdId: string | undefined;
@@ -10,6 +11,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
   const { sendReport } = useReportApi();
   const [isExamStarted, setIsExamStarted] = useState(true);
+  const { toast } = useToast();
 
   const sendTimeFinish = useCallback(async () => {
     try {
@@ -106,7 +108,14 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
-        console.log("createdId en useProtoringExam = " + createdId);
+        // Mostrar el mensaje profesional antes de iniciar el examen
+        toast({
+          variant: "default",
+          title: "Iniciando el Examen",
+          description:
+            "El examen está protegido bajo un sistema de monitoreo avanzado. Se utilizará tu cámara y se controlará la actividad en tu pantalla para garantizar la validez del examen. Por favor, asegúrate de cumplir con las normas establecidas.",
+          duration: 5000,
+        });
 
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
