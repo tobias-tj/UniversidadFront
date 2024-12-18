@@ -1,9 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { startCamera } from "@/usecases/useStartCam";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFaceApi } from "@/usecases/useFaceApi";
 import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+type FaceValidationError = {
+  error: string;
+};
+
+const MAX_ATTEMPTS = 3; // Máximo número de intentos
 
 const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -13,6 +20,9 @@ const CaptureFace: React.FC = () => {
   const token = localStorage.getItem("Token");
 
   const isNewUser = location.state?.isNewUser;
+
+  const { toast } = useToast();
+  const [attempts, setAttempts] = useState(0); // Estado para el contador de intentos
 
   useEffect(() => {
     const initialize = async () => {
@@ -32,22 +42,95 @@ const CaptureFace: React.FC = () => {
       context?.drawImage(videoRef.current, 0, 0);
       const imageData = canvas.toDataURL("image/jpeg");
 
-      let success = false;
+      try {
+        let result;
+        if (isNewUser) {
+          result = await uploadFaceImage(imageData, token!);
+        } else {
+          result = await validateFaceImage(imageData, token!);
+        }
 
-      if (isNewUser) {
-        success = await uploadFaceImage(imageData, token!);
-      } else {
-        success = await validateFaceImage(imageData, token!);
-      }
+        const { success, error } = result;
 
-      if (success) {
-        navigate("/form", { state: { ...location.state } });
+        if (success) {
+          navigate("/form", { state: { ...location.state } });
+        } else {
+          console.log(`Intento fallido ${attempts} de ${MAX_ATTEMPTS}`);
+
+          const errorMessage = error as unknown as FaceValidationError;
+          let mensajeError = "";
+          if (
+            errorMessage!.error ===
+            "No se ha detectado ninguna cara en la imagen."
+          ) {
+            mensajeError =
+              "No se detectó ninguna cara en la imagen. Por favor, asegúrate de capturar tu rostro claramente.";
+          } else if (
+            errorMessage!.error === "La cara no coincide con la registrada."
+          ) {
+            mensajeError =
+              "La cara capturada no coincide con la registrada. Intenta de nuevo.";
+          } else if (
+            errorMessage!.error ===
+            "El documento de identidad ya está registrado con otra cara."
+          ) {
+            mensajeError =
+              "El usuario ya cuenta con un faceID creado, no puedes registrar uno nuevo.";
+          }
+          toast({
+            variant: "destructive",
+            title: "Validacion fallida",
+            description: mensajeError,
+          });
+
+          // Incrementar el contador de intentos
+          setAttempts((prev) => {
+            const newAttempts = prev + 1;
+            console.log(`Intento fallido ${newAttempts} de ${MAX_ATTEMPTS}`);
+            if (newAttempts >= MAX_ATTEMPTS) {
+              toast({
+                variant: "destructive",
+                title: "Demasiados intentos fallidos",
+                description:
+                  "Has excedido el número máximo de intentos. Regresando a la página anterior.",
+              });
+
+              navigate(-2);
+            }
+            return newAttempts;
+          });
+        }
+      } catch (error) {
+        console.error(error);
+
+        toast({
+          variant: "destructive",
+          title: "Error inesperado",
+          description:
+            "Ocurrió un error al procesar la validación. Intenta nuevamente.",
+        });
+
+        // Incrementar el contador incluso en errores inesperados
+        setAttempts((prev) => {
+          const newAttempts = prev + 1;
+          if (newAttempts >= MAX_ATTEMPTS) {
+            toast({
+              variant: "destructive",
+              title: "Demasiados intentos fallidos",
+              description:
+                "Has excedido el número máximo de intentos. Regresando a la página anterior.",
+            });
+
+            navigate(-2); // Regresa a la página anterior
+          }
+          return newAttempts;
+        });
       }
     }
   };
 
   return (
-    <div className="w-full h-screen bg-gray-200 flex flex-col justify-center items-center">
+    <div className="flex flex-col items-center justify-center w-full h-screen bg-gray-200">
       <div className="relative w-[720px] max-w-full">
         {/* Video */}
         <video
@@ -61,7 +144,7 @@ const CaptureFace: React.FC = () => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-72 h-72 stroke-gray-600 opacity-50"
+            className="opacity-50 w-72 h-72 stroke-gray-600"
             viewBox="0 0 100 100"
           >
             <rect
