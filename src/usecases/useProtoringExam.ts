@@ -1,5 +1,6 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import axios from "axios";
+import { useReportApi } from "./useReportApi";
 
 interface useProtoringExamProps {
   createdId: string | undefined;
@@ -7,6 +8,8 @@ interface useProtoringExamProps {
 
 const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
+  const { sendReport } = useReportApi();
+  const [isExamStarted, setIsExamStarted] = useState(true);
 
   const sendTimeFinish = useCallback(async () => {
     try {
@@ -67,6 +70,38 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
       console.error("Error al capturar o enviar imágenes: ", error);
     }
   }, [createdId, token]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && createdId) {
+        if (isExamStarted) {
+          setIsExamStarted(false);
+        } else {
+          sendReport(createdId, "window_changed", new Date().toISOString());
+          console.log("El usuario cambió de ventana.");
+        }
+      }
+    };
+
+    const handleBlur = () => {
+      if (createdId) {
+        if (isExamStarted) {
+          setIsExamStarted(false);
+        } else {
+          sendReport(createdId, "window_changed", new Date().toISOString());
+          console.log("El usuario hizo click fuera del navegador.");
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [createdId, sendReport]);
 
   useEffect(() => {
     const sendTimeStart = async () => {
