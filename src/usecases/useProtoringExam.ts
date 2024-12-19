@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from "react";
 import axios from "axios";
-import { useReportApi } from "./useReportApi";
+// import { useReportApi } from "./useReportApi";
 import { useToast } from "@/hooks/use-toast";
 
 interface useProtoringExamProps {
@@ -9,9 +9,32 @@ interface useProtoringExamProps {
 
 const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
-  const { sendReport } = useReportApi();
-  const [isExamStarted, setIsExamStarted] = useState(true);
+  // const { sendReport } = useReportApi();
+  // const [isExamStarted, setIsExamStarted] = useState(true);
   const { toast } = useToast();
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+
+  // Solicitar permisos para capturar pantalla al inicio
+  const requestScreenPermissions = useCallback(async () => {
+    try {
+      // Solicitar el permiso para capturar la pantalla
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: "monitor", // Priorizar la pantalla principal
+        },
+      });
+
+      setScreenStream(stream); // Guardar el stream en el estado para su reutilización
+      console.log("Permisos para captura de pantalla otorgados.");
+      return true;
+    } catch (error) {
+      console.error(
+        "Error al obtener permisos para captura de pantalla: ",
+        error
+      );
+      return false;
+    }
+  }, []);
 
   const sendTimeFinish = useCallback(async () => {
     try {
@@ -73,26 +96,56 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     }
   }, [createdId, token]);
 
+  // Captura la pantalla solo cuando el usuario sale del foco
+  const captureAndSendScreen = useCallback(async () => {
+    if (!createdId || !screenStream) return;
+
+    try {
+      const video = document.createElement("video");
+      video.srcObject = screenStream;
+      await new Promise((resolve) => (video.onloadedmetadata = resolve));
+      video.play();
+
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      // Ajustar el tamaño del canvas al tamaño del video
+      canvas.width = video.videoWidth; // Usar el ancho real del video capturado
+      canvas.height = video.videoHeight;
+
+      // Capturar una imagen de la pantalla
+      context!.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg");
+
+      // Enviar captura de pantalla al backend
+      await axios.post("http://localhost:3000/api/manageReportExam", {
+        createId: createdId,
+        screen: dataUrl,
+        incidentType: "window_changed",
+        time: new Date().toISOString(),
+      });
+
+      console.log("Captura de pantalla enviada al backend.");
+
+      // // Parar la captura de la pantalla después de la captura
+      // screenStream.getTracks().forEach((track) => track.stop());
+    } catch (error) {
+      console.error("Error al capturar la pantalla: ", error);
+    }
+  }, [createdId, screenStream]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && createdId) {
-        if (isExamStarted) {
-          setIsExamStarted(false);
-        } else {
-          sendReport(createdId, "window_changed", new Date().toISOString());
-          console.log("El usuario cambió de ventana.");
-        }
+      if (document.hidden && createdId && screenStream) {
+        captureAndSendScreen();
       }
     };
 
     const handleBlur = () => {
-      if (createdId) {
-        if (isExamStarted) {
-          setIsExamStarted(false);
-        } else {
-          sendReport(createdId, "window_changed", new Date().toISOString());
-          console.log("El usuario hizo click fuera del navegador.");
-        }
+      if (createdId && screenStream) {
+        // sendReport(createdId, "window_changed", new Date().toISOString());
+        console.log("El usuario hizo click fuera del navegador.");
+        captureAndSendScreen();
       }
     };
 
@@ -103,7 +156,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleBlur);
     };
-  }, [createdId, sendReport]);
+  }, [captureAndSendScreen, createdId, screenStream]);
 
   useEffect(() => {
     const sendTimeStart = async () => {
@@ -116,6 +169,18 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
             "El examen está protegido bajo un sistema de monitoreo avanzado. Se utilizará tu cámara y se controlará la actividad en tu pantalla para garantizar la validez del examen. Por favor, asegúrate de cumplir con las normas establecidas.",
           duration: 5000,
         });
+
+        // Solicitar permisos para capturar la pantalla antes de continuar
+        const hasPermission = await requestScreenPermissions();
+        if (!hasPermission) {
+          toast({
+            variant: "destructive",
+            title: "Permiso Denegado",
+            description:
+              "No se puede iniciar el examen sin permiso para capturar la pantalla.",
+          });
+          return;
+        }
 
         const response = await axios.patch(
           "http://localhost:3000/api/manageStartTimeExam",
@@ -164,10 +229,17 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     if (createdId) {
       sendTimeStart();
     }
-  }, [createdId, sendTimeFinish, captureAndSendImages]);
+  }, [
+    createdId,
+    sendTimeFinish,
+    captureAndSendImages,
+    toast,
+    token,
+    requestScreenPermissions,
+  ]);
 
   useEffect(() => {
-    const handleMessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       if (
         event.origin === "http://localhost" &&
         event.data === "exam-finished"

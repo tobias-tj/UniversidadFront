@@ -4,12 +4,14 @@ export const useReportApi = () => {
   const sendReport = async (
     createId: string,
     incidentType: string,
+    screen: string,
     time: string
   ) => {
     try {
       const payload = {
         createId,
         incidentType,
+        screen,
         time,
       };
 
