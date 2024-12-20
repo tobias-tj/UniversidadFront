@@ -10,8 +10,11 @@ interface useProtoringExamProps {
 const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
   const { sendReport } = useReportApi();
-  const [isExamStarted, setIsExamStarted] = useState(true);
   const { toast } = useToast();
+  const [exitCount, setExitCount] = useState(0); // Contador de salidas
+  const [isRedirecting, setIsRedirecting] = useState(false); // Nuevo estado para manejar la animación
+  const [isExamFinished, setIsExamFinished] = useState(false); // Estado para manejar si el examen ha terminado
+  const [examWindow, setExamWindow] = useState<Window | null>(null); // Guardamos la referencia de la ventana
 
   const sendTimeFinish = useCallback(async () => {
     try {
@@ -74,36 +77,49 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   }, [createdId, token]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.hidden && createdId) {
-        if (isExamStarted) {
-          setIsExamStarted(false);
-        } else {
+        setExitCount((prev) => prev + 1);
+
+        if (exitCount < 2) {
+          toast({
+            variant: "default",
+            title: `Advertencia ${exitCount + 1}/2`,
+            description:
+              "No debes salir de la ventana emergente durante el examen.",
+            duration: 5000,
+          });
           sendReport(createdId, "window_changed", new Date().toISOString());
           console.log("El usuario cambió de ventana.");
-        }
-      }
-    };
-
-    const handleBlur = () => {
-      if (createdId) {
-        if (isExamStarted) {
-          setIsExamStarted(false);
         } else {
-          sendReport(createdId, "window_changed", new Date().toISOString());
-          console.log("El usuario hizo click fuera del navegador.");
+          toast({
+            variant: "destructive",
+            title: "Examen Cancelado",
+            description:
+              "Has superado el límite de salidas permitidas. Tu intento ha sido eliminado.",
+            duration: 3000,
+          });
+          setIsRedirecting(true); // Activar la animación de redirección
+          console.log(
+            "Examen completado, debido a incidencia cerrando ventana emergente."
+          );
+          // Cerrar la ventana emergente
+          if (examWindow && !examWindow.closed) {
+            examWindow.close();
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          window.location.href = "http://localhost/my/";
         }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
     };
-  }, [createdId, sendReport]);
+  }, [createdId, sendReport, toast, exitCount]);
 
   useEffect(() => {
     const sendTimeStart = async () => {
@@ -114,7 +130,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           title: "Iniciando el Examen",
           description:
             "El examen está protegido bajo un sistema de monitoreo avanzado. Se utilizará tu cámara y se controlará la actividad en tu pantalla para garantizar la validez del examen. Por favor, asegúrate de cumplir con las normas establecidas.",
-          duration: 5000,
+          duration: 4000,
         });
 
         const response = await axios.patch(
@@ -134,6 +150,8 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
             console.error("No se pudo abrir la ventana emergente.");
             return;
           }
+
+          setExamWindow(examWindow); // Guardar la referencia de la ventana
 
           const examInterval = setInterval(() => {
             if (examWindow.closed) {
@@ -167,7 +185,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   }, [createdId, sendTimeFinish, captureAndSendImages]);
 
   useEffect(() => {
-    const handleMessage = (event) => {
+    const handleMessage = async (event) => {
       if (
         event.origin === "http://localhost" &&
         event.data === "exam-finished"
@@ -177,6 +195,9 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
         if (examWindow && !examWindow.closed) {
           examWindow.close();
         }
+        setIsRedirecting(true); // Activar la animación de redirección
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        window.location.href = "http://localhost/my/";
       }
     };
 
@@ -186,6 +207,8 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
       window.removeEventListener("message", handleMessage);
     };
   }, []);
+
+  return { isRedirecting, isExamFinished }; // Devolver los estados que necesita el componente
 };
 
 export default useProtoringExam;
