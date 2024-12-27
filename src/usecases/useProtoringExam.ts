@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from "react";
 import axios from "axios";
 import { useReportApi } from "./useReportApi";
 import { useToast } from "@/hooks/use-toast";
+import { useCloseExam } from "./useExamClose";
 
 interface useProtoringExamProps {
   createdId: string | undefined;
@@ -9,6 +10,10 @@ interface useProtoringExamProps {
 
 const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const token = localStorage.getItem("Token");
+  const attempt = localStorage.getItem("attempt");
+  const quizId = localStorage.getItem("quizId");
+  const cmid = localStorage.getItem("cmid");
+
   const { sendReport } = useReportApi();
   const { toast } = useToast();
   const [exitCount, setExitCount] = useState(0); // Contador de salidas
@@ -105,7 +110,10 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           );
           // Cerrar la ventana emergente
           if (examWindow && !examWindow.closed) {
+            console.log("Se envia el mensaje a window closed!");
             examWindow.close();
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useCloseExam(Number(quizId), Number(attempt), Number(cmid));
           }
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
