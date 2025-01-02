@@ -1,14 +1,7 @@
 import axios from "axios";
+import { checkAppIsRunning } from "./useCheckApp";
 
 export const useReportApi = () => {
-  const checkAppIsRunning = async () => {
-    try {
-      const response = await axios.get("http://localhost:3010/ping");
-      return response.status === 200;
-    } catch {
-      return false;
-    }
-  };
   const sendReport = async (createId: string) => {
     try {
       // Verificamos si la app esta activa
