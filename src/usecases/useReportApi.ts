@@ -1,45 +1,44 @@
 import axios from "axios";
 
 export const useReportApi = () => {
-  const sendReport = async (
-    createId: string,
-    incidentType: string,
-    time: string
-  ) => {
+  const checkAppIsRunning = async () => {
     try {
-      const payload = {
-        createId,
-        incidentType,
-        time,
-      };
+      const response = await axios.get("http://localhost:3010/ping");
+      return response.status === 200;
+    } catch {
+      return false;
+    }
+  };
+  const sendReport = async (createId: string) => {
+    try {
+      // Verificamos si la app esta activa
+      const appIsRunnig = await checkAppIsRunning();
 
-      console.log("Enviando reporte:", payload);
+      if (!appIsRunnig) {
+        console.log("Aplicación no esta activa. Intentando abrirla...");
 
-      const response = await axios.post(
-        "http://localhost:3000/api/manageReportExam",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+        // Abrir la aplicacion por primera vez
+        const baseUrlSchema = "securityexamapp://open";
+        window.location.href = baseUrlSchema;
 
-      if (response.status === 200) {
-        console.log("Reporte enviado con éxito.");
-        return true;
-      } else {
-        throw new Error("Error al enviar el reporte.");
+        // Espera para dar tiempo a que la app se inice
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
+
+      // Enviar el ID al servidor interno
+      console.log("Enviando createId al servidor interno...");
+      const response = await axios.post("http://localhost:3010/trigger", {
+        createId, // Axios convierte el objeto automáticamente a JSON
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`Error en la solicitud: ${response.statusText}`);
+      }
+
+      console.log(`Reporte enviado exitosamente con createId: ${createId}`);
+      return true;
     } catch (error) {
-      // Manejo de errores
-      if (axios.isAxiosError(error) && error.response) {
-        console.error("Error en la respuesta de la API:", error.response.data);
-      } else if (error instanceof Error) {
-        console.error("Error:", error.message);
-      } else {
-        console.error("Error desconocido");
-      }
+      console.error("Error al enviar el reporte:", error);
       return false;
     }
   };

@@ -94,7 +94,8 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
               "No debes salir de la ventana emergente durante el examen.",
             duration: 5000,
           });
-          sendReport(createdId, "window_changed", new Date().toISOString());
+          //TODO: En cada sendReport tendriamos que cambiar a utilizar electron y que ahi el envie el reporte de cambio de ventana
+          await sendReport(createdId);
           console.log("El usuario cambió de ventana.");
         } else {
           toast({
@@ -132,6 +133,8 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
+        //Aqui ya deberiamos de llamar a Electron
+
         // Mostrar el mensaje profesional antes de iniciar el examen
         toast({
           variant: "default",

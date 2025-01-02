@@ -3,8 +3,9 @@ import { startCamera } from "@/usecases/useStartCam";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFaceApi } from "@/usecases/useFaceApi";
 import { motion } from "framer-motion";
-import { Camera } from "lucide-react";
+import { Camera, ComputerIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCaptureScreen } from "@/usecases/useCaptureScreen";
 
 type FaceValidationError = {
   error: string;
