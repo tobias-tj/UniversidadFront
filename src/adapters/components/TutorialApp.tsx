@@ -24,10 +24,12 @@ export default function TutorialApp() {
   };
 
   const handleDownload = () => {
-    window.open(
-      "https://www.dropbox.com/scl/fi/86n3xhiaqvvok563crfaf/ProctorGuardInstaller.exe?rlkey=dusmzk9e0cntpkpswt9rx2zo8&st=y972kd0n&dl=1",
-      "_blank"
-    );
+    const isWindows = navigator.userAgent.includes("Windows");
+    const downloadLink = isWindows
+      ? "https://www.dropbox.com/scl/fi/86n3xhiaqvvok563crfaf/ProctorGuardInstaller.exe?rlkey=dusmzk9e0cntpkpswt9rx2zo8&st=y972kd0n&dl=1"
+      : "https://www.dropbox.com/scl/fi/uordgkejx9m7wepxghqaq/SecurityExamApp.dmg?rlkey=uzqyq0zur67416p829vt6y39t&st=ihzeraoo&dl=1";
+
+    window.open(downloadLink, "_blank");
     setStep(2);
   };
 
