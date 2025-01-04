@@ -42,7 +42,7 @@ const useFirstProcess = () =>
                 console.log("Inicia proceso para usuario Nuevo. (Tutorial)");
                 if (createdId) {
                   console.log("El proceso de sincronizacion con exito");
-                  navigate("/preparation", {
+                  navigate("/tutorial-app", {
                     state: {
                       createdId,
                     },

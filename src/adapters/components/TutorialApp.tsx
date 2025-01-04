@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion"; // Librería de animaciones
 import { Button } from "@/components/ui/button"; // Componente de Shadcn
 import { Check } from "lucide-react"; // Icono para los pasos completados
 import { checkAppIsRunning } from "@/usecases/useCheckApp";
+import Lottie from "react-lottie";
+import robot from "@/assets/lottie/robot.json";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function TutorialApp() {
   const [step, setStep] = useState(1);
   const [, setIsAppRunning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const createdId = location.state?.createdId;
+
+  const handleContinue = () => {
+    navigate("/preparation", {
+      state: {
+        createdId,
+      },
+    });
+  };
 
   const handleDownload = () => {
     window.open(
@@ -51,9 +65,29 @@ export default function TutorialApp() {
 
   const progressWidth = (step / steps.length) * 100;
 
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: robot,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+
+  useEffect(() => {
+    const delayAndRedirect = async () => {
+      if (step === 4) {
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // Esperar 3 segundos
+        handleContinue();
+      }
+    };
+
+    delayAndRedirect();
+  }, [handleContinue, step]);
+
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+      <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
         <h1 className="mb-6 text-2xl font-bold text-center">
           Guía de Instalación
         </h1>
@@ -128,6 +162,16 @@ export default function TutorialApp() {
           </p>
         )}
         <div className="w-full pt-8 my-auto text-center">
+          <div className="mb-4 text-4xl font-bold text-center text-gray-800">
+            {/* YvagaCore */}
+            {/* <img src="/Vector.png" className="h-32 w-28" /> */}
+            <Lottie
+              options={defaultOptions}
+              height={200}
+              width={180}
+              speed={1.5}
+            />
+          </div>
           <span className="font-semibold opacity-50">Power By YvagaCore</span>
         </div>
       </div>
