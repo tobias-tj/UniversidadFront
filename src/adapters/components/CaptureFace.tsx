@@ -5,6 +5,7 @@ import { useFaceApi } from "@/usecases/useFaceApi";
 import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { checkAppIsRunning } from "@/usecases/useCheckApp";
 
 type FaceValidationError = {
   error: string;
@@ -24,6 +25,44 @@ const CaptureFace: React.FC = () => {
   const { toast } = useToast();
   const [attempts, setAttempts] = useState(0); // Estado para el contador de intentos
 
+  const [, setIsAppRunning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const createdId = location.state?.createdId;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const checkApp = async () => {
+    setIsLoading(true);
+    try {
+      const appIsRunning = await checkAppIsRunning();
+      setIsAppRunning(appIsRunning);
+      if (appIsRunning) {
+        console.log(
+          "La aplicacion ya esta ejecutandose, entonces boton habilitado."
+        );
+      } else {
+        console.log("La aplicacion no se encuentra disponible en este equipo.");
+        console.log("Redireccionando para que descargues la app necesaria.");
+        navigate("/tutorial-app", {
+          state: {
+            createdId,
+            urlString: "/capture-face",
+          },
+        });
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      console.log("Hubo un error al verificar la apliacion.");
+      navigate("/tutorial-app", {
+        state: {
+          createdId,
+          urlString: "/capture-face",
+        },
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initialize = async () => {
       if (videoRef.current) {
@@ -31,7 +70,8 @@ const CaptureFace: React.FC = () => {
       }
     };
     initialize();
-  }, []);
+    checkApp();
+  }, [checkApp]);
 
   const handleCapture = async () => {
     if (videoRef.current) {
@@ -165,6 +205,7 @@ const CaptureFace: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleCapture}
+        disabled={isLoading}
         className="w-[720px] max-w-full mt-6 py-4 text-white rounded-lg bg-primary flex items-center justify-center"
       >
         Estoy listo <Camera className="ml-2" />

@@ -14,9 +14,10 @@ export default function TutorialApp() {
   const navigate = useNavigate();
   const location = useLocation();
   const createdId = location.state?.createdId;
+  const urlString = location.state?.urlString;
 
   const handleContinue = () => {
-    navigate("/preparation", {
+    navigate(urlString, {
       state: {
         createdId,
       },

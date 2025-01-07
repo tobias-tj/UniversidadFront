@@ -45,6 +45,7 @@ const useFirstProcess = () =>
                   navigate("/tutorial-app", {
                     state: {
                       createdId,
+                      urlString: "/preparation",
                     },
                   });
                 }
