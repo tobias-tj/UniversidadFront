@@ -11,7 +11,8 @@ type FaceValidationError = {
   error: string;
 };
 
-const MAX_ATTEMPTS = 3; // Máximo número de intentos
+const MAX_ATTEMPTS = 3;
+const MAX_CHECKS = 2;
 
 const CaptureFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -19,45 +20,38 @@ const CaptureFace: React.FC = () => {
   const location = useLocation();
   const { uploadFaceImage, validateFaceImage } = useFaceApi();
   const token = localStorage.getItem("Token");
-
   const isNewUser = location.state?.isNewUser;
-
   const { toast } = useToast();
-  const [attempts, setAttempts] = useState(0); // Estado para el contador de intentos
-
-  const [, setIsAppRunning] = useState(false);
+  const [attempts, setAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const createdId = location.state?.createdId;
+  const [checkAttempts, setCheckAttempts] = useState(0);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const checkApp = async () => {
+    if (checkAttempts >= MAX_CHECKS) {
+      console.log("Aplicación no encontrada después de múltiples intentos.");
+      navigate("/tutorial-app", {
+        state: { createdId, urlString: "/capture-face" },
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const appIsRunning = await checkAppIsRunning();
-      setIsAppRunning(appIsRunning);
       if (appIsRunning) {
-        console.log(
-          "La aplicacion ya esta ejecutandose, entonces boton habilitado."
-        );
+        console.log("La aplicación está ejecutándose.");
       } else {
-        console.log("La aplicacion no se encuentra disponible en este equipo.");
-        console.log("Redireccionando para que descargues la app necesaria.");
+        console.log("La aplicación no está disponible, redirigiendo...");
         navigate("/tutorial-app", {
-          state: {
-            createdId,
-            urlString: "/capture-face",
-          },
+          state: { createdId, urlString: "/capture-face" },
         });
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.log("Hubo un error al verificar la apliacion.");
-      navigate("/tutorial-app", {
-        state: {
-          createdId,
-          urlString: "/capture-face",
-        },
-      });
+      console.log("Error al verificar la aplicación, reintentando...");
+      setCheckAttempts((prev) => prev + 1);
+      setTimeout(checkApp, 2000);
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +65,7 @@ const CaptureFace: React.FC = () => {
     };
     initialize();
     checkApp();
-  }, [checkApp]);
+  }, []);
 
   const handleCapture = async () => {
     if (videoRef.current) {
@@ -149,7 +143,6 @@ const CaptureFace: React.FC = () => {
           description:
             "Ocurrió un error al procesar la validación. Intenta nuevamente.",
         });
-
         // Incrementar el contador incluso en errores inesperados
         setAttempts((prev) => {
           const newAttempts = prev + 1;
@@ -172,35 +165,13 @@ const CaptureFace: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center w-full h-screen bg-gray-200">
       <div className="relative w-[720px] max-w-full">
-        {/* Video */}
         <video
           ref={videoRef}
           autoPlay
           muted
-          id="inputVideo"
           className="w-full h-auto border rounded-lg transform scale-x-[-1]"
         />
-
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="opacity-50 w-72 h-72 stroke-gray-600"
-            viewBox="0 0 100 100"
-          >
-            <rect
-              x="5"
-              y="5"
-              width="90"
-              height="90"
-              fill="none"
-              strokeDasharray="5 5"
-              strokeWidth="2"
-            />
-          </svg>
-        </div>
       </div>
-
-      {/* Botón */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
