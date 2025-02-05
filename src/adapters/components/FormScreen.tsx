@@ -22,9 +22,9 @@ const FormScreen: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <p>Iniciando el examen...</p>
+      {!isExamFinished && <p>Iniciando el examen...</p>}
 
-      {isRedirecting && !isExamFinished && (
+      {isRedirecting && isExamFinished && (
         <div className="flex flex-col items-center space-y-4">
           <Lottie options={defaultOptions} height={400} width={400} />
           <p className="text-xl text-gray-700">
