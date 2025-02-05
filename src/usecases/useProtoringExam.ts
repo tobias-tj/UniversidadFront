@@ -83,10 +83,10 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (document.hidden && createdId) {
+      if (document.hidden && createdId && !isExamFinished) {
         setExitCount((prev) => prev + 1);
 
-        if (exitCount < 2) {
+        if (exitCount < 2 && !isExamFinished) {
           toast({
             variant: "default",
             title: `Advertencia ${exitCount + 1}/2`,
@@ -94,7 +94,6 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
               "No debes salir de la ventana emergente durante el examen.",
             duration: 5000,
           });
-          //TODO: En cada sendReport tendriamos que cambiar a utilizar electron y que ahi el envie el reporte de cambio de ventana
           await sendReport(createdId);
           console.log("El usuario cambió de ventana.");
         } else {
@@ -105,6 +104,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
               "Has superado el límite de salidas permitidas. Tu intento ha sido eliminado.",
             duration: 3000,
           });
+          setIsExamFinished(true);
           setIsRedirecting(true); // Activar la animación de redirección
           console.log(
             "Examen completado, debido a incidencia cerrando ventana emergente."
@@ -128,11 +128,13 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [createdId, sendReport, toast, exitCount]);
+  }, [createdId, sendReport, toast, exitCount, isExamFinished]);
 
   useEffect(() => {
     const sendTimeStart = async () => {
       try {
+        if (isExamFinished) return; // 🔥 Evita ejecutar si el examen ya terminó
+
         //Aqui ya deberiamos de llamar a Electron
 
         // Mostrar el mensaje profesional antes de iniciar el examen
@@ -166,17 +168,24 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
           const examInterval = setInterval(() => {
             if (examWindow.closed) {
-              console.log(
-                "El examen ha terminado, cerrando ventana emergente."
-              );
-              clearInterval(examInterval);
-              sendTimeFinish();
+              if (!isExamFinished) {
+                setIsExamFinished(true);
+                console.log(
+                  "El examen ha terminado, cerrando ventana emergente."
+                );
+                clearInterval(examInterval);
+                sendTimeFinish();
+              }
             }
           }, 1000);
 
           // Iniciar el intervalo de capturas cada 30 segundos
           // const captureInterval = setInterval(captureAndSendImages, 30000);
-          const captureInterval = setInterval(captureAndSendImages, 15000);
+          const captureInterval = setInterval(() => {
+            if (!isExamFinished) {
+              captureAndSendImages();
+            }
+          }, 15000);
 
           return () => {
             clearInterval(examInterval);
@@ -190,10 +199,10 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
       }
     };
 
-    if (createdId) {
+    if (createdId && !isExamFinished) {
       sendTimeStart();
     }
-  }, [createdId, sendTimeFinish, captureAndSendImages]);
+  }, [createdId, sendTimeFinish, captureAndSendImages, isExamFinished]);
 
   useEffect(() => {
     const handleMessage = async (event) => {
@@ -201,11 +210,13 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
         event.origin === "http://localhost" &&
         event.data === "exam-finished"
       ) {
+        if (isExamFinished) return;
         console.log("Examen completado, cerrando ventana emergente.");
         const examWindow = window.open("", "_blank");
         if (examWindow && !examWindow.closed) {
           examWindow.close();
         }
+        setIsExamFinished(true);
         setIsRedirecting(true); // Activar la animación de redirección
         await new Promise((resolve) => setTimeout(resolve, 2000));
         window.location.href = "http://localhost/my/";
@@ -217,7 +228,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [isExamFinished]);
 
   return { isRedirecting, isExamFinished }; // Devolver los estados que necesita el componente
 };
