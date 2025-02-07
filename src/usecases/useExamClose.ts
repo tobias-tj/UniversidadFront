@@ -7,6 +7,7 @@ export const useCloseExam = async (
   cmid: number
 ) => {
   try {
+    // TODO: FIJARSE EN LA URL DE MODDLE DE LA UNIVERSIDAD QUE SEA DINAMIC (CAPAZ PODES RECUPERAR DEL JWT NUEVO)
     const response = await axios.post(
       `http://localhost/local/quiz_closer/index.php?quizid=${quizid}&attemptid=${attemptId}&cmid=${cmid}`,
       {

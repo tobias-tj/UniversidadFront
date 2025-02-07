@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export const useExamUser = () => {
   const [error, setError] = useState<string | null>(null);
   const token = localStorage.getItem("Token");
@@ -13,10 +15,7 @@ export const useExamUser = () => {
         token,
       };
 
-      const response = await axios.post(
-        "http://localhost:3000/api/firstProcess",
-        data
-      );
+      const response = await axios.post(`${BASE_URL}/firstProcess`, data);
       if (response.status === 201) {
         console.log("Usuario y examen sincronizado correctamente");
         return response.data.createdId;

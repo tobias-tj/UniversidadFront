@@ -4,6 +4,9 @@ import { useReportApi } from "./useReportApi";
 import { useToast } from "@/hooks/use-toast";
 import { useCloseExam } from "./useExamClose";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+const PYTHON_URL = import.meta.env.VITE_API_PYTHON_URL;
+
 interface useProtoringExamProps {
   createdId: string | undefined;
 }
@@ -23,10 +26,9 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
   const sendTimeFinish = useCallback(async () => {
     try {
-      const response = await axios.patch(
-        "http://localhost:3000/api/manageFinishTimeExam",
-        { createdId }
-      );
+      const response = await axios.patch(`${BASE_URL}/manageFinishTimeExam`, {
+        createdId,
+      });
       if (response.status === 200) {
         console.log("Tiempo de examen finalizado correctamente.");
       } else {
@@ -69,7 +71,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
       stream.getTracks().forEach((track) => track.stop());
 
       // Enviar capturas al backend
-      await axios.post("http://localhost:8000/proctoring-exam/", {
+      await axios.post(`${PYTHON_URL}/proctoring-exam/`, {
         createdId,
         images: captures,
         token,
@@ -118,6 +120,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           }
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
+          // TODO: FALTA OBTENER LA URL PRINCIPAL DE MOODLE DE MANERA DINAMICA
           window.location.href = "http://localhost/my/";
         }
       }
@@ -146,10 +149,10 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           duration: 4000,
         });
 
-        const response = await axios.patch(
-          "http://localhost:3000/api/manageStartTimeExam",
-          { createdId, token }
-        );
+        const response = await axios.patch(`${BASE_URL}/manageStartTimeExam`, {
+          createdId,
+          token,
+        });
         if (response.status === 200) {
           console.log("Tiempo de examen iniciado correctamente.");
 
@@ -219,6 +222,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
         setIsExamFinished(true);
         setIsRedirecting(true); // Activar la animación de redirección
         await new Promise((resolve) => setTimeout(resolve, 2000));
+        // TODO: FALTA OBTENER LA URL DE MOODLE DE MANERA DINAMICA
         window.location.href = "http://localhost/my/";
       }
     };

@@ -1,5 +1,7 @@
 import axios from "axios";
 
+const PYTHON_URL = import.meta.env.VITE_API_PYTHON_URL;
+
 export const useFaceApi = () => {
   const uploadFaceImage = async (
     image: string,
@@ -15,7 +17,7 @@ export const useFaceApi = () => {
       formData.append("token", token);
 
       const responseUpload = await axios.post(
-        "http://localhost:8000/create-face/",
+        `${PYTHON_URL}/create-face/`,
         formData,
         {
           headers: {
@@ -63,7 +65,7 @@ export const useFaceApi = () => {
       console.log("Validando imagen de usuario recurrente", blob);
 
       const responseValidation = await axios.post(
-        "http://localhost:8000/validation-face/",
+        `${PYTHON_URL}/validation-face/`,
         formData,
         {
           headers: {

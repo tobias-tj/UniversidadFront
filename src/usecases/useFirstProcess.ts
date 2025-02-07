@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useExamUser } from "./useExamUser";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 const useFirstProcess = () =>
   // token: string | null
   // userId: string | null,
@@ -22,14 +24,11 @@ const useFirstProcess = () =>
         if (!token) return;
 
         try {
-          const response = await axios.get(
-            "http://localhost:3000/api/accessCheckout",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await axios.get(`${BASE_URL}/accessCheckout`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           if (response.status === 200) {
             console.log("UserId enviado al backend correctamente");
