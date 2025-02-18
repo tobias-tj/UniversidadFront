@@ -208,7 +208,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   }, [createdId, sendTimeFinish, captureAndSendImages, isExamFinished]);
 
   useEffect(() => {
-    const handleMessage = async (event) => {
+    const handleMessage = async (event: MessageEvent) => {
       if (
         event.origin === "http://localhost" &&
         event.data === "exam-finished"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion"; // Librería de animaciones
 import { Button } from "@/components/ui/button"; // Componente de Shadcn
 import { Check } from "lucide-react"; // Icono para los pasos completados
