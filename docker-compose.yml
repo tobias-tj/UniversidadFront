@@ -22,9 +22,9 @@ services:
     depends_on:
       - universidad-back
     environment:
-      - VITE_API_URL=http://localhost:3000/api
-      - VITE_API_APP_URL=http://localhost:3010
-      - VITE_API_PYTHON_URL=http://localhost:8000
+      - VITE_API_URL=http://161.35.53.140:3000/api
+      - VITE_API_APP_URL=http://161.35.53.140:3010
+      - VITE_API_PYTHON_URL=http://161.35.53.140:8000
     env_file:
       - ./UniversidadFront/.env # Aquí referenciamos el archivo .env de UniversidadFront
 
@@ -36,7 +36,7 @@ services:
     depends_on:
       - universidad-back
     environment:
-      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_URL=http://161.35.53.140:3000/api
     env_file:
       - ./proctor-guard/.env # Aquí referenciamos el archivo .env de proctor-guard
 
