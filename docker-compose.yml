@@ -1,0 +1,55 @@
+version: "4.0"
+
+services:
+  universidad-back:
+    build: ./UniversidadBack
+    container_name: universidad-back
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://ProjectFaceId_owner:F1VU3tiPOwHe@ep-purple-tree-a52xzu97.us-east-2.aws.neon.tech/ProjectFaceId?sslmode=require
+      - JWT_PRIVATE_KEY=cbd372e00d9ea767fe60dfa86c08443a7d63896e5549b215d179fc9f5e8d25a5
+      - SALT=10
+    env_file:
+      - ./UniversidadBack/.env # Aquí referenciamos el archivo .env de UniversidadBack
+
+  universidad-front:
+    build: ./UniversidadFront
+    container_name: universidad-front
+    ports:
+      - "5173:80"
+    depends_on:
+      - universidad-back
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_APP_URL=http://localhost:3010
+      - VITE_API_PYTHON_URL=http://localhost:8000
+    env_file:
+      - ./UniversidadFront/.env # Aquí referenciamos el archivo .env de UniversidadFront
+
+  proctor-guard:
+    build: ./proctor-guard
+    container_name: proctor-guard
+    ports:
+      - "5174:80"
+    depends_on:
+      - universidad-back
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    env_file:
+      - ./proctor-guard/.env # Aquí referenciamos el archivo .env de proctor-guard
+
+  apifaceid: # Nuevo servicio para el backend Django
+    build: ./apiFaceId # Ruta al directorio de tu backend Django
+    container_name: apifaceid
+    ports:
+      - "8000:8000" # Exponer el puerto 8000
+    environment:
+      - DATABASE_URL=postgresql://ProjectFaceId_owner:F1VU3tiPOwHe@ep-purple-tree-a52xzu97.us-east-2.aws.neon.tech/ProjectFaceId?sslmode=require
+      - JWT_KEY=cbd372e00d9ea767fe60dfa86c08443a7d63896e5549b215d179fc9f5e8d25a5
+    env_file:
+      - ./apiFaceId/.env # Aquí referenciamos el archivo .env de apiFaceId
+    depends_on:
+      - universidad-back
+      - universidad-front # Dependencia para asegurar que el backend y frontend estén corriendo antes de iniciar este servicio
