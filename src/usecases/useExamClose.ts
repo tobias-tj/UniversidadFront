@@ -7,9 +7,11 @@ export const useCloseExam = async (
   cmid: number
 ) => {
   try {
-    // TODO: FIJARSE EN LA URL DE MODDLE DE LA UNIVERSIDAD QUE SEA DINAMIC (CAPAZ PODES RECUPERAR DEL JWT NUEVO)
+    // TODO: FIJARSE EN LA URL DE MODDLE DE LA UNIVERSIDAD QUE SEA DINAMIC (CAPAZ PODES RECUPERAR DEL JWT NUEVO) y guardar en el localstorage de donde se suponse que vino la persona
+    // Develop: http://localhost/local/quiz_closer/index.php?quizid=${quizid}&attemptid=${attemptId}&cmid=${cmid}
+    // Production: http://161.35.53.140:8888/local/quiz_closer/index.php?quizid=${quizid}&attemptid=${attemptId}&cmid=${cmid}
     const response = await axios.post(
-      `http://localhost/local/quiz_closer/index.php?quizid=${quizid}&attemptid=${attemptId}&cmid=${cmid}`,
+      `http://161.35.53.140:8888/local/quiz_closer/index.php?quizid=${quizid}&attemptid=${attemptId}&cmid=${cmid}`,
       {
         headers: {
           "Content-Type": "application/json",
