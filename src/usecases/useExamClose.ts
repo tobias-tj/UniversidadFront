@@ -12,7 +12,7 @@ export const useCloseExam = async (
     // Production: http://161.35.53.140:8888/local/quiz_closer/index.php
     const response = await axios.post(
       `http://161.35.53.140:8888/local/quiz_closer/index.php`,
-      { quizid, attemptId, cmid }, // Enviamos el JSON en el cuerpo
+      { quizid, attemptid: attemptId, cmid },
       {
         headers: {
           "Content-Type": "application/json",
