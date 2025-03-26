@@ -11,7 +11,7 @@ export const useCloseExam = async (
     // Develop: http://localhost/local/quiz_closer/index.php
     // Production: http://161.35.53.140:8888/local/quiz_closer/index.php
     const response = await axios.post(
-      `http://161.35.53.140:8888/local/quiz_closer/index.php`,
+      `http://localhost/local/quiz_closer/index.php`,
       { quizid, attemptid: attemptId, cmid },
       {
         headers: {

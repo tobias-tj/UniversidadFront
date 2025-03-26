@@ -122,7 +122,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           await new Promise((resolve) => setTimeout(resolve, 2000));
           // TODO: FALTA OBTENER LA URL PRINCIPAL DE MOODLE DE MANERA DINAMICA
           //Develop: "http://localhost/my/";
-          window.location.href = "http://161.35.53.140:8888/my/";
+          window.location.href = "http://localhost/my/";
         }
       }
     };
@@ -212,7 +212,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     const handleMessage = async (event: MessageEvent) => {
       //Develop: "http://localhost/my/";
       if (
-        event.origin === "http://161.35.53.140:8888" &&
+        event.origin === "http://localhost" &&
         event.data === "exam-finished"
       ) {
         if (isExamFinished) return;
@@ -226,7 +226,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // TODO: FALTA OBTENER LA URL DE MOODLE DE MANERA DINAMICA
         //Develop: "http://localhost/my/";
-        window.location.href = "http://161.35.53.140:8888/my/";
+        window.location.href = "http://localhost/my/";
       }
     };
 
