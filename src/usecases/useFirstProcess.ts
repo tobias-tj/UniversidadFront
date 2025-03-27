@@ -33,7 +33,14 @@ const useFirstProcess = () =>
           if (response.status === 200) {
             console.log("UserId enviado al backend correctamente");
             console.log(response.data);
-
+            console.log(
+              "Lo que viene en el response url-->",
+              response.data.moddleUrl
+            );
+            localStorage.setItem(
+              "moddleUrl",
+              response.data.moddleUrl || "URL-NOT-FOUND"
+            );
             const createdId = await firstProcess();
 
             setTimeout(async () => {

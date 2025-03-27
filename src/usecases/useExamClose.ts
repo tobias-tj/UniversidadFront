@@ -7,11 +7,13 @@ export const useCloseExam = async (
   cmid: number
 ) => {
   try {
+    const moddleUrl = localStorage.getItem("moddleUrl");
+
     // TODO: FIJARSE EN LA URL DE MODDLE DE LA UNIVERSIDAD QUE SEA DINAMIC (CAPAZ PODES RECUPERAR DEL JWT NUEVO) y guardar en el localstorage de donde se suponse que vino la persona
     // Develop: http://localhost/local/quiz_closer/index.php
     // Production: http://161.35.53.140:8888/local/quiz_closer/index.php
     const response = await axios.post(
-      `http://localhost/local/quiz_closer/index.php`,
+      `${moddleUrl}/local/quiz_closer/index.php`,
       { quizid, attemptid: attemptId, cmid },
       {
         headers: {

@@ -16,6 +16,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   const attempt = localStorage.getItem("attempt");
   const quizId = localStorage.getItem("quizId");
   const cmid = localStorage.getItem("cmid");
+  const moddleUrl = localStorage.getItem("moddleUrl");
 
   const { sendReport } = useReportApi();
   const { toast } = useToast();
@@ -120,9 +121,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
           }
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          // TODO: FALTA OBTENER LA URL PRINCIPAL DE MOODLE DE MANERA DINAMICA
-          //Develop: "http://localhost/my/";
-          window.location.href = "http://localhost/my/";
+          window.location.href = `${moddleUrl}`;
         }
       }
     };
@@ -210,11 +209,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      //Develop: "http://localhost/my/";
-      if (
-        event.origin === "http://localhost" &&
-        event.data === "exam-finished"
-      ) {
+      if (event.origin === `${moddleUrl}` && event.data === "exam-finished") {
         if (isExamFinished) return;
         console.log("Examen completado, cerrando ventana emergente.");
         const examWindow = window.open("", "_blank");
@@ -224,9 +219,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
         setIsExamFinished(true);
         setIsRedirecting(true); // Activar la animación de redirección
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        // TODO: FALTA OBTENER LA URL DE MOODLE DE MANERA DINAMICA
-        //Develop: "http://localhost/my/";
-        window.location.href = "http://localhost/my/";
+        window.location.href = `${moddleUrl}`;
       }
     };
 
