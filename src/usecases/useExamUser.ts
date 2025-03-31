@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useExamUser = () => {
   const [error, setError] = useState<string | null>(null);
-  const token = localStorage.getItem("Token");
+  const token = localStorage.getItem("Token-Security");
 
   const firstProcess = async () => {
     try {
