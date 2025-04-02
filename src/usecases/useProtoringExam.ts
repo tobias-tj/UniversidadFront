@@ -12,7 +12,7 @@ interface useProtoringExamProps {
 }
 
 const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
-  const token = localStorage.getItem("Token");
+  const token = localStorage.getItem("Token-Security");
   const attempt = localStorage.getItem("attempt");
   const quizId = localStorage.getItem("quizId");
   const cmid = localStorage.getItem("cmid");
