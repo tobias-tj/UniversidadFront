@@ -5,6 +5,7 @@ const APP_URL = import.meta.env.VITE_API_APP_URL;
 
 export const useReportApi = () => {
   const sendReport = async (createId: string) => {
+    const token = localStorage.getItem("Token-Security");
     try {
       // Verificamos si la app esta activa
       const appIsRunnig = await checkAppIsRunning();
@@ -21,9 +22,9 @@ export const useReportApi = () => {
       }
 
       // Enviar el ID al servidor interno
-      console.log("Enviando createId al servidor interno...");
       const response = await axios.post(`${APP_URL}/trigger`, {
-        createId, // Axios convierte el objeto automáticamente a JSON
+        createId,
+        token,
       });
 
       if (response.status !== 200) {
