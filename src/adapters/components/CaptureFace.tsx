@@ -19,13 +19,14 @@ const CaptureFace: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { uploadFaceImage, validateFaceImage } = useFaceApi();
-  const token = localStorage.getItem("Token");
+  const token = localStorage.getItem("Token-Security");
   const isNewUser = location.state?.isNewUser;
   const { toast } = useToast();
   const [attempts, setAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const createdId = location.state?.createdId;
   const [checkAttempts, setCheckAttempts] = useState(0);
+  const moddleUrl = localStorage.getItem("moddleUrl");
 
   const checkApp = async () => {
     if (checkAttempts >= MAX_CHECKS) {
@@ -129,7 +130,7 @@ const CaptureFace: React.FC = () => {
                   "Has excedido el número máximo de intentos. Regresando a la página anterior.",
               });
 
-              navigate(-2);
+              window.location.href = `${moddleUrl}`;
             }
             return newAttempts;
           });
