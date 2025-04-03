@@ -29,6 +29,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
     try {
       const response = await axios.patch(`${BASE_URL}/manageFinishTimeExam`, {
         createdId,
+        token,
       });
       if (response.status === 200) {
         console.log("Tiempo de examen finalizado correctamente.");
