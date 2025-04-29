@@ -9,9 +9,13 @@ const PYTHON_URL = import.meta.env.VITE_API_PYTHON_URL;
 
 interface useProtoringExamProps {
   createdId: string | undefined;
+  proctorType: number | undefined;
 }
 
-const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
+const useProtoringExam = ({
+  createdId,
+  proctorType,
+}: useProtoringExamProps) => {
   const token = localStorage.getItem("Token-Security");
   const attempt = localStorage.getItem("attempt");
   const quizId = localStorage.getItem("quizId");
@@ -46,7 +50,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
   // Capturar 3-5 imágenes y enviarlas al backend
   const captureAndSendImages = useCallback(async () => {
-    if (!createdId) return;
+    if (!createdId || proctorType === 2) return;
 
     try {
       // Obtener la cámara
@@ -86,6 +90,7 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
   }, [createdId, token]);
 
   useEffect(() => {
+    if (proctorType === 2) return;
     const handleVisibilityChange = async () => {
       if (document.hidden && createdId && !isExamFinished) {
         setExitCount((prev) => prev + 1);
@@ -185,16 +190,18 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
           // Iniciar el intervalo de capturas cada 30 segundos
           // const captureInterval = setInterval(captureAndSendImages, 30000);
-          const captureInterval = setInterval(() => {
-            if (!isExamFinished) {
-              captureAndSendImages();
-            }
-          }, 15000);
+          if (proctorType !== 2) {
+            const captureInterval = setInterval(() => {
+              if (!isExamFinished) {
+                captureAndSendImages();
+              }
+            }, 15000);
 
-          return () => {
-            clearInterval(examInterval);
-            clearInterval(captureInterval); // Limpiar el intervalo al desmontar
-          };
+            return () => {
+              clearInterval(examInterval);
+              clearInterval(captureInterval); // Limpiar el intervalo al desmontar
+            };
+          }
         } else {
           console.error("Error al iniciar el tiempo del examen.");
         }
