@@ -30,8 +30,8 @@ export default function TutorialApp() {
       navigator.userAgent.includes("Windows");
     console.log("Es Windows-->", isWindows);
     const downloadLink = isWindows
-      ? "https://www.dropbox.com/scl/fi/86n3xhiaqvvok563crfaf/ProctorGuardInstaller.exe?rlkey=dusmzk9e0cntpkpswt9rx2zo8&st=y972kd0n&dl=1"
-      : "https://www.dropbox.com/scl/fi/uordgkejx9m7wepxghqaq/SecurityExamApp.dmg?rlkey=uzqyq0zur67416p829vt6y39t&st=ihzeraoo&dl=1";
+      ? "https://www.dropbox.com/scl/fi/rvf1w4j9nazkhl28fqntl/ProctorGuardDevelop.exe?rlkey=ks1je2fuol3aftb8a5yw44eja&e=1&st=jf73q440&dl=1"
+      : "https://www.dropbox.com/scl/fi/doyobwik6k4a7p8iq6ndw/ProctorGuardDesarrollo.dmg?rlkey=6evx813eedj2cc24oi74rxi47&st=cz1yixli&dl=1";
 
     window.open(downloadLink, "_blank");
     setStep(2);
