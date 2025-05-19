@@ -7,9 +7,12 @@ import Lottie from "react-lottie";
 const FormScreen: React.FC = () => {
   const location = useLocation();
   const createdId = location.state?.createdId;
-  // Usar el hook para manejar el tiempo del examen
+  const proctorType = location.state?.proctorType;
 
-  const { isExamFinished, isRedirecting } = useProtoringExam({ createdId });
+  const { isExamFinished, isRedirecting } = useProtoringExam({
+    createdId,
+    proctorType,
+  });
 
   const defaultOptions = {
     loop: true,

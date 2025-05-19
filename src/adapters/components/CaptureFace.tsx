@@ -27,6 +27,7 @@ const CaptureFace: React.FC = () => {
   const createdId = location.state?.createdId;
   const [checkAttempts, setCheckAttempts] = useState(0);
   const moddleUrl = localStorage.getItem("moddleUrl");
+  const proctorType = location.state?.proctorType;
 
   const checkApp = async () => {
     if (checkAttempts >= MAX_CHECKS) {
@@ -65,7 +66,9 @@ const CaptureFace: React.FC = () => {
       }
     };
     initialize();
-    checkApp();
+    if (proctorType !== 2) {
+      checkApp();
+    }
   }, []);
 
   const handleCapture = async () => {

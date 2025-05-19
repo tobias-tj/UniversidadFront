@@ -29,11 +29,6 @@ const LoadingCheckoutScreen: React.FC = () => {
   localStorage.setItem("quizId", quizId || "0");
   localStorage.setItem("cmid", cmid || "0");
 
-  console.log(token);
-  console.log("Attempt lo que viene: ", attempt);
-  console.log("QuizID lo que viene: ", quizId);
-  console.log("CMID lo que viene: ", cmid);
-
   const defaultOptions = {
     loop: true,
     autoplay: true,

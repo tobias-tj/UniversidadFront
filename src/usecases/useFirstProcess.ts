@@ -7,7 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 const useFirstProcess = () => {
   const navigate = useNavigate();
-  const { firstProcess } = useExamUser(); // Traer lógica de sincronización
+  const { firstProcess } = useExamUser();
 
   const token = localStorage.getItem("Token");
 
@@ -26,10 +26,8 @@ const useFirstProcess = () => {
           console.log("UserId enviado al backend correctamente");
           console.log(response.data);
 
-          console.log(
-            "Lo que viene en el response url-->",
-            response.data.moddleUrl
-          );
+          console.log("ProctorType--->", response.data.proctorType);
+
           localStorage.setItem(
             "moddleUrl",
             response.data.moddleUrl || "URL-NOT-FOUND"
@@ -44,12 +42,22 @@ const useFirstProcess = () => {
               console.log("Inicia proceso para usuario Nuevo. (Tutorial)");
               if (createdId) {
                 console.log("El proceso de sincronizacion con exito");
-                navigate("/tutorial-app", {
-                  state: {
-                    createdId,
-                    urlString: "/preparation",
-                  },
-                });
+                if (response.data.proctorType === 2) {
+                  navigate("/capture-face", {
+                    state: {
+                      createdId,
+                      isNewUser: true,
+                      proctorType: response.data.proctorType,
+                    },
+                  });
+                } else {
+                  navigate("/tutorial-app", {
+                    state: {
+                      createdId,
+                      urlString: "/preparation",
+                    },
+                  });
+                }
               }
             } else {
               if (createdId) {
@@ -60,6 +68,7 @@ const useFirstProcess = () => {
                     createdId,
                     token,
                     isNewUser: false,
+                    proctorType: response.data.proctorType,
                   },
                 });
               }

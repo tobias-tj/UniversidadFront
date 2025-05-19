@@ -1,17 +1,22 @@
 import { useEffect, useCallback, useState } from "react";
-import axios from "axios";
 import { useReportApi } from "./useReportApi";
 import { useToast } from "@/hooks/use-toast";
 import { useCloseExam } from "./useExamClose";
-
-const BASE_URL = import.meta.env.VITE_API_URL;
-const PYTHON_URL = import.meta.env.VITE_API_PYTHON_URL;
+import {
+  sendStartTime,
+  sendFinishTime,
+  captureImages,
+} from "./helpers/examUtils";
 
 interface useProtoringExamProps {
   createdId: string | undefined;
+  proctorType: number | undefined;
 }
 
-const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
+const useProtoringExam = ({
+  createdId,
+  proctorType,
+}: useProtoringExamProps) => {
   const token = localStorage.getItem("Token-Security");
   const attempt = localStorage.getItem("attempt");
   const quizId = localStorage.getItem("quizId");
@@ -20,220 +25,118 @@ const useProtoringExam = ({ createdId }: useProtoringExamProps) => {
 
   const { sendReport } = useReportApi();
   const { toast } = useToast();
-  const [exitCount, setExitCount] = useState(0); // Contador de salidas
-  const [isRedirecting, setIsRedirecting] = useState(false); // Nuevo estado para manejar la animación
-  const [isExamFinished, setIsExamFinished] = useState(false); // Estado para manejar si el examen ha terminado
-  const [examWindow, setExamWindow] = useState<Window | null>(null); // Guardamos la referencia de la ventana
+  const [exitCount, setExitCount] = useState(0);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isExamFinished, setIsExamFinished] = useState(false);
+  const [examWindow, setExamWindow] = useState<Window | null>(null);
 
-  const sendTimeFinish = useCallback(async () => {
+  const handleStartExam = useCallback(async () => {
+    if (!createdId || isExamFinished) return;
+
+    toast({
+      variant: "default",
+      title: "Iniciando el Examen",
+      description:
+        "Se utilizará tu cámara y se controlará tu pantalla para garantizar la validez del examen.",
+      duration: 4000,
+    });
+
     try {
-      const response = await axios.patch(`${BASE_URL}/manageFinishTimeExam`, {
-        createdId,
-        token,
-      });
-      if (response.status === 200) {
-        console.log("Tiempo de examen finalizado correctamente.");
-      } else {
-        console.error("Error al finalizar el tiempo del examen.");
-      }
-    } catch (error) {
-      console.error(
-        "Error al enviar los datos de finalización al backend: ",
-        error
+      const response = await sendStartTime(createdId, token);
+      const newWindow = window.open(
+        response.data.formUrl,
+        "_blank",
+        "width=800,height=600"
       );
-    }
-  }, [createdId]);
 
-  // Capturar 3-5 imágenes y enviarlas al backend
-  const captureAndSendImages = useCallback(async () => {
-    if (!createdId) return;
+      if (!newWindow) throw new Error("No se pudo abrir la ventana emergente.");
 
-    try {
-      // Obtener la cámara
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = document.createElement("video");
-      video.srcObject = stream;
-      await new Promise((resolve) => (video.onloadedmetadata = resolve));
-      video.play();
+      setExamWindow(newWindow);
 
-      const captures = [];
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-
-      for (let i = 0; i < 10; i++) {
-        // Capturar 10 imágenes
-        context!.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg");
-        captures.push(dataUrl);
-        await new Promise((resolve) => setTimeout(resolve, 100)); // Pausa de 100ms entre capturas
-      }
-
-      // Parar el video y liberar la cámara
-      video.pause();
-      stream.getTracks().forEach((track) => track.stop());
-
-      // Enviar capturas al backend
-      await axios.post(`${PYTHON_URL}/proctoring-exam/`, {
-        createdId,
-        images: captures,
-        token,
-      });
-
-      console.log("Capturas enviadas al backend.");
-    } catch (error) {
-      console.error("Error al capturar o enviar imágenes: ", error);
-    }
-  }, [createdId, token]);
-
-  useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.hidden && createdId && !isExamFinished) {
-        setExitCount((prev) => prev + 1);
-
-        if (exitCount < 2 && !isExamFinished) {
-          toast({
-            variant: "default",
-            title: `Advertencia ${exitCount + 1}/2`,
-            description:
-              "No debes salir de la ventana emergente durante el examen.",
-            duration: 5000,
-          });
-          await sendReport(createdId);
-          console.log("El usuario cambió de ventana.");
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Examen Cancelado",
-            description:
-              "Has superado el límite de salidas permitidas. Tu intento ha sido eliminado.",
-            duration: 3000,
-          });
+      const examInterval = setInterval(() => {
+        if (newWindow.closed && !isExamFinished) {
           setIsExamFinished(true);
-          setIsRedirecting(true); // Activar la animación de redirección
-          console.log(
-            "Examen completado, debido a incidencia cerrando ventana emergente."
-          );
-          // Cerrar la ventana emergente
-          if (examWindow && !examWindow.closed) {
-            console.log("Se envia el mensaje a window closed!");
-            examWindow.close();
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            useCloseExam(Number(quizId), Number(attempt), Number(cmid));
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          window.location.href = `${moddleUrl}`;
+          sendFinishTime(createdId, token);
+          clearInterval(examInterval);
         }
+      }, 1000);
+
+      if (proctorType !== 2) {
+        const captureInterval = setInterval(() => {
+          if (!isExamFinished) captureImages(createdId, token);
+        }, 15000);
+
+        return () => clearInterval(captureInterval);
       }
-    };
+    } catch (err) {
+      console.error("❌ Error al iniciar el examen:", err);
+    }
+  }, [createdId, token, proctorType, isExamFinished]);
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  const handleVisibilityChange = useCallback(async () => {
+    if (document.hidden && createdId && !isExamFinished && proctorType !== 2) {
+      const updatedCount = exitCount + 1;
+      setExitCount(updatedCount);
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [createdId, sendReport, toast, exitCount, isExamFinished]);
-
-  useEffect(() => {
-    const sendTimeStart = async () => {
-      try {
-        if (isExamFinished) return; // 🔥 Evita ejecutar si el examen ya terminó
-
-        //Aqui ya deberiamos de llamar a Electron
-
-        // Mostrar el mensaje profesional antes de iniciar el examen
+      if (updatedCount < 3) {
         toast({
           variant: "default",
-          title: "Iniciando el Examen",
-          description:
-            "El examen está protegido bajo un sistema de monitoreo avanzado. Se utilizará tu cámara y se controlará la actividad en tu pantalla para garantizar la validez del examen. Por favor, asegúrate de cumplir con las normas establecidas.",
-          duration: 4000,
+          title: `Advertencia ${updatedCount}/2`,
+          description: "No debes salir del examen.",
         });
-
-        const response = await axios.patch(`${BASE_URL}/manageStartTimeExam`, {
-          createdId,
-          token,
+        await sendReport(createdId);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Examen Cancelado",
+          description: "Has salido demasiadas veces del examen.",
         });
-        if (response.status === 200) {
-          console.log("Tiempo de examen iniciado correctamente.");
+        setIsExamFinished(true);
+        setIsRedirecting(true);
 
-          const examWindow = window.open(
-            response.data.formUrl,
-            "_blank",
-            "width=800,height=600"
-          );
-
-          if (!examWindow) {
-            console.error("No se pudo abrir la ventana emergente.");
-            return;
-          }
-
-          setExamWindow(examWindow); // Guardar la referencia de la ventana
-
-          const examInterval = setInterval(() => {
-            if (examWindow.closed) {
-              if (!isExamFinished) {
-                setIsExamFinished(true);
-                console.log(
-                  "El examen ha terminado, cerrando ventana emergente."
-                );
-                clearInterval(examInterval);
-                sendTimeFinish();
-              }
-            }
-          }, 1000);
-
-          // Iniciar el intervalo de capturas cada 30 segundos
-          // const captureInterval = setInterval(captureAndSendImages, 30000);
-          const captureInterval = setInterval(() => {
-            if (!isExamFinished) {
-              captureAndSendImages();
-            }
-          }, 15000);
-
-          return () => {
-            clearInterval(examInterval);
-            clearInterval(captureInterval); // Limpiar el intervalo al desmontar
-          };
-        } else {
-          console.error("Error al iniciar el tiempo del examen.");
-        }
-      } catch (error) {
-        console.error("Error al enviar los datos al backend: ", error);
-      }
-    };
-
-    if (createdId && !isExamFinished) {
-      sendTimeStart();
-    }
-  }, [createdId, sendTimeFinish, captureAndSendImages, isExamFinished]);
-
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      if (event.origin === `${moddleUrl}` && event.data === "exam-finished") {
-        if (isExamFinished) return;
-        console.log("Examen completado, cerrando ventana emergente.");
-        const examWindow = window.open("", "_blank");
         if (examWindow && !examWindow.closed) {
           examWindow.close();
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useCloseExam(Number(quizId), Number(attempt), Number(cmid));
         }
-        setIsExamFinished(true);
-        setIsRedirecting(true); // Activar la animación de redirección
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        // TODO: FALTA OBTENER LA URL DE MOODLE DE MANERA DINAMICA
-        //Develop: "http://localhost/my/";
+
+        await new Promise((res) => setTimeout(res, 2000));
         window.location.href = `${moddleUrl}`;
       }
-    };
+    }
+  }, [createdId, examWindow, exitCount, toast, isExamFinished]);
 
+  const handleMessage = useCallback(
+    async (event: MessageEvent) => {
+      if (
+        event.origin === `${moddleUrl}` &&
+        event.data === "exam-finished" &&
+        !isExamFinished
+      ) {
+        examWindow?.close();
+        setIsExamFinished(true);
+        setIsRedirecting(true);
+        await new Promise((res) => setTimeout(res, 2000));
+        window.location.href = `${moddleUrl}`;
+      }
+    },
+    [moddleUrl, examWindow, isExamFinished]
+  );
+
+  useEffect(() => {
+    if (createdId && !isExamFinished) handleStartExam();
+  }, [handleStartExam]);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("message", handleMessage);
-
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("message", handleMessage);
     };
-  }, [isExamFinished]);
+  }, [handleVisibilityChange, handleMessage]);
 
-  return { isRedirecting, isExamFinished }; // Devolver los estados que necesita el componente
+  return { isRedirecting, isExamFinished };
 };
 
 export default useProtoringExam;

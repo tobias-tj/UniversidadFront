@@ -18,7 +18,7 @@ const PreparationScreen: React.FC = () => {
 
   const handleContinue = () => {
     navigate("/capture-face", {
-      state: { createdId, isNewUser: true },
+      state: { createdId, isNewUser: true, proctorType: 1 },
     });
   };
   const carouselRef = React.useRef<CarouselApi | null>(null);
