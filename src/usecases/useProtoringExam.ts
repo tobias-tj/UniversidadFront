@@ -53,11 +53,19 @@ const useProtoringExam = ({
 
       setExamWindow(newWindow);
 
-      const examInterval = setInterval(() => {
+      const examInterval = setInterval(async () => {
         if (newWindow.closed && !isExamFinished) {
           setIsExamFinished(true);
-          sendFinishTime(createdId, token);
           clearInterval(examInterval);
+          try {
+            await sendFinishTime(createdId, token);
+          } catch (e) {
+            console.error("❌ Error al enviar hora de finalización:", e);
+          }
+
+          setIsRedirecting(true);
+          await new Promise((res) => setTimeout(res, 2000));
+          window.location.href = `${moddleUrl}`;
         }
       }, 1000);
 
@@ -113,9 +121,15 @@ const useProtoringExam = ({
         event.data === "exam-finished" &&
         !isExamFinished
       ) {
-        examWindow?.close();
+        console.log("📩 Mensaje recibido del plugin: examen finalizado");
+
+        if (examWindow && !examWindow.closed) {
+          examWindow.close();
+        }
+
         setIsExamFinished(true);
         setIsRedirecting(true);
+
         await new Promise((res) => setTimeout(res, 2000));
         window.location.href = `${moddleUrl}`;
       }
