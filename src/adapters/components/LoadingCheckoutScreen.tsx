@@ -22,12 +22,17 @@ const LoadingCheckoutScreen: React.FC = () => {
   const token = queryParams.get("token");
   const attempt = queryParams.get("attemptID");
   const quizId = queryParams.get("quizid");
-  const cmid = queryParams.get("cmid");
+  //const cmid = queryParams.get("cmid");
+  const studentId = queryParams.get("studentId");
+  const ws = queryParams.get("ws");
+
   // Guardar el token en el local storage
   localStorage.setItem("Token", token || "TOKEN-EMPTY");
   localStorage.setItem("attempt", attempt || "0");
   localStorage.setItem("quizId", quizId || "0");
-  localStorage.setItem("cmid", cmid || "0");
+  //localStorage.setItem("cmid", cmid || "0");
+  localStorage.setItem("studentId", studentId || "0");
+  localStorage.setItem("ws", ws || "ws-empty");
 
   const defaultOptions = {
     loop: true,

@@ -4,24 +4,17 @@ import axios from "axios";
 export const useCloseExam = async (
   quizid: number,
   attemptId: number,
-  cmid: number
+  userId: number,
+  ws: string
 ) => {
   try {
     const moddleUrl = localStorage.getItem("moddleUrl");
 
-    // Develop: http://localhost/local/quiz_closer/index.php
-    // Production: http://161.35.53.140:8888/local/quiz_closer/index.php
     const response = await axios.post(
-      `${moddleUrl}/local/quiz_closer/index.php`,
-      { quizid, attemptid: attemptId, cmid },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      `${moddleUrl}/webservice/rest/server.php?wstoken=${ws}&wsfunction=local_closexam_close_quiz_attempt&moodlewsrestformat=json&quizid=${quizid}&attemptid=${attemptId}&userid=${userId}`
     );
 
-    const result = response.data; // Axios ya maneja automáticamente la conversión a JSON
+    const result = response.data;
     console.log(result);
 
     toast({
@@ -29,9 +22,6 @@ export const useCloseExam = async (
       title: "Examen cerrado",
       description: "El examen fue cerrado correctamente.",
     });
-
-    // Opcional: Navegar a otra página después de cerrar el examen
-    // navigate(-1);
   } catch (error) {
     console.error("Error closing exam:", error);
 
