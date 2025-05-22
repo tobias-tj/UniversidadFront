@@ -20,7 +20,9 @@ const useProtoringExam = ({
   const token = localStorage.getItem("Token-Security");
   const attempt = localStorage.getItem("attempt");
   const quizId = localStorage.getItem("quizId");
-  const cmid = localStorage.getItem("cmid");
+  // const cmid = localStorage.getItem("cmid");
+  const userId = localStorage.getItem("studentId");
+  const ws = localStorage.getItem("ws");
   const moddleUrl = localStorage.getItem("moddleUrl");
 
   const { sendReport } = useReportApi();
@@ -97,7 +99,12 @@ const useProtoringExam = ({
         if (examWindow && !examWindow.closed) {
           examWindow.close();
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          useCloseExam(Number(quizId), Number(attempt), Number(cmid));
+          useCloseExam(
+            Number(quizId),
+            Number(attempt),
+            Number(userId),
+            String(ws)
+          );
         }
 
         await new Promise((res) => setTimeout(res, 2000));
